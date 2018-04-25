@@ -1,2 +1,1 @@
-# RE_X
-Road Extraction from Satellite Images using Deep Learning Approach
+# Road Extraction from Satellite Images using Deep Learning Approach
