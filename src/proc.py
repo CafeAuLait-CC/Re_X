@@ -56,8 +56,8 @@ def merge(xs,xs_,depth):
     return xm
 def catimg(ys,n_classes):
     y_out = np.empty((ys.shape[0],ys.shape[1],n_classes))
-    for x in range(ys.shape[0]):
-        for y in range(ys.shape[1]):
+    for x in range(0, ys.shape[0]):
+        for y in range(0, ys.shape[1]):
             y_out[x,y] = to_categorical(ys[x,y],n_classes)
             
     return y_out        
@@ -86,8 +86,8 @@ def generator_predict(x_i,w,h,max,limit):
         mid = (w//2)
         pad = ((mid,mid),(mid,mid),(0,0))
         x_i = np.pad(x_i,pad,'constant')
-        for x_pixel in range(x_i.shape[0]-w+1):  
-            for y_pixel in range(x_i.shape[1]-h+1):              
+        for x_pixel in range(0, x_i.shape[0]-w+1):  
+            for y_pixel in range(0, x_i.shape[1]-h+1):              
                 patches.append(gen_kernel(x_i,w,h,x_pixel,y_pixel,center=False))
                 if (x_pixel+1)*(y_pixel+1)==max or len(patches)>=limit:
                     yield (np.array(patches))
@@ -256,7 +256,7 @@ def gen_aug_seq(x,y,patch_size,batch_size=64):
         x_train = []
         y_train = []
         l = l%100
-        for i in range(len(y)):
+        for i in range(0, len(y)):
             for x_ind in range(0+l,y[i].shape[0]-constrained_patch,100):
                 for y_ind in range(0+l,y[i].shape[1]-constrained_patch,100):
                     y_patch = y[i][x_ind:x_ind+constrained_patch,y_ind:y_ind+constrained_patch,:]
@@ -388,7 +388,7 @@ def gen_aug(x,y,patch_size,patch_size_out,batch_size=64,single_pixel=False,augme
     x_train = []
     y_train = []
     while True:
-        for i in range(len(y)):
+        for i in range(0, len(y)):
             options = int((y[i].shape[0]-constrained_patch)*(y[i].shape[1]-constrained_patch))
             sel_vals = np.random.permutation(options)
             part_amount = 0
@@ -469,7 +469,7 @@ def get_aug(x,y,patch_size,patch_size_out,batch_size=64):
     x_train = []
     y_train = []
 
-    for i in range(len(y)):
+    for i in range(0, len(y)):
         options = int((y[i].shape[0]-constrained_patch)*(y[i].shape[1]-constrained_patch))
         sel_vals = np.random.permutation(options)
         for val in sel_vals:
@@ -499,7 +499,7 @@ def generator_train_patch(x,x_g,w,h,w_out=0,batch_size=64,categorical=False):
         part_size = batch_size//len(x)
         if part_size==0:
             part_size=1
-        for i in range(len(x)):
+        for i in range(0, len(x)):
             x_img = x[i]
             y_img = classes.classimg(x_g[i],map=True)
             sel_vals = np.random.permutation((y_img.shape[0]-w)*(y_img.shape[1]-h))
@@ -513,7 +513,7 @@ def generator_train_patch(x,x_g,w,h,w_out=0,batch_size=64,categorical=False):
 
         if categorical:
             y_categorical = []
-            for i in range(len(y_train)):
+            for i in range(0, len(y_train)):
                 y_t = y_train[i].reshape((y_train[i].size,1))
                 #y_cat = np.zeros((y_t.size,6),dtype=int)
                 y_cat = label_binarize(y_t,[0,1,2,3,4,5])
@@ -537,7 +537,7 @@ def generator_train(x,x_g,w,h,CAT=None,batch_size=256):
 
         mid = (w//2)
         pad = ((mid,mid),(mid,mid),(0,0))
-        for i in range(len(x)):
+        for i in range(0, len(x)):
             positive = 0
             negative = 0
             x_img = x[i]
@@ -578,14 +578,14 @@ def gen_data(x,x_g,shape,train=True,amount=1000):
     xoffset = int((shape[0])/2)
     yoffset = int((shape[1])/2)
 
-    for i in range(len(x)):
+    for i in range(0, len(x)):
         x_img = x[i]
         y_img = x_g[i]
 
         xs,ys = find_work_area(x_img,shape)      
         vals = xs*ys
 
-        sel_vals = np.random.permutation(np.array(range(vals)))[:amount]
+        sel_vals = np.random.permutation(np.array(range(0, vals)))[:amount]
             
         for val in sel_vals:
             x_ind,y_ind = get_xy(val,xs)
