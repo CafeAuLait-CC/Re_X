@@ -328,49 +328,49 @@ def get_pixels_around_center(center_x, center_y, patch_size, img_size):
     return pixels_around
 
 def generate_patch(xs,ys,patch_size, batch_size=64, augment=False, defer=False):
-	x_train = []
-	y_train = []
+    x_train = []
+    y_train = []
 
-	while True:
-		#Randomizes all possible locations into "patch_locations"
-		patch_locations = []
-		sum_locations = 0
-		all_locations = []
-		for y in ys:
-			locations = int((y.shape[0]-patch_size[0])*(y.shape[1]-patch_size[1]))
-			sum_locations += locations
-			all_locations.append(locations)
-			patch_locations.append(np.random.permutation(locations))
-		patch_index = [0]*len(ys)
-		i = 0
-		while sum(patch_index) < sum_locations:
-			#If patch_index has not reached all locations
-			if patch_index[i] < all_locations[i]:
-				index=patch_locations[i][patch_index[i]]
-				x_patch = get_patch(xs[i], patch_size, index)
-				y_patch = get_patch(ys[i], patch_size, index)
-				if defer or (augment and np.random.random() < 0.5):
-					y_patch = np.fliplr(y_patch)
-					x_patch = np.fliplr(x_patch)
-				x_train.append(x_patch)
-				y_train.append(y_patch)
-				patch_index[i] += 1
-			i+=1
-			i = i%len(ys)
+    while True:
+        #Randomizes all possible locations into "patch_locations"
+        patch_locations = []
+        sum_locations = 0
+        all_locations = []
+        for y in ys:
+            locations = int((y.shape[0]-patch_size[0])*(y.shape[1]-patch_size[1]))
+            sum_locations += locations
+            all_locations.append(locations)
+            patch_locations.append(np.random.permutation(locations))
+        patch_index = [0]*len(ys)
+        i = 0
+        while sum(patch_index) < sum_locations:
+            #If patch_index has not reached all locations
+            if patch_index[i] < all_locations[i]:
+                index=patch_locations[i][patch_index[i]]
+                x_patch = get_patch(xs[i], patch_size, index)
+                y_patch = get_patch(ys[i], patch_size, index)
+                if defer or (augment and np.random.random() < 0.5):
+                    y_patch = np.fliplr(y_patch)
+                    x_patch = np.fliplr(x_patch)
+                x_train.append(x_patch)
+                y_train.append(y_patch)
+                patch_index[i] += 1
+            i+=1
+            i = i%len(ys)
 
-			if len(y_train) == batch_size:
-				y_train = np.array(y_train)
-				x_train = np.array(x_train)
-				yield x_train, y_train
-				x_train = []
-				y_train = []
-		
-		
+            if len(y_train) == batch_size:
+                y_train = np.array(y_train)
+                x_train = np.array(x_train)
+                yield x_train, y_train
+                x_train = []
+                y_train = []
+        
+        
 
 def get_patch(img, patch_size, index):
-	x_val = index%(img.shape[0]-patch_size[0])
-	y_val = index//(img.shape[0]-patch_size[0])
-	return img[x_val:x_val+patch_size[0],y_val:y_val+patch_size[1],:]
+    x_val = index%(img.shape[0]-patch_size[0])
+    y_val = index//(img.shape[0]-patch_size[0])
+    return img[x_val:x_val+patch_size[0],y_val:y_val+patch_size[1],:]
 
 def gen_aug(x,y,patch_size,patch_size_out,batch_size=64,single_pixel=False,augment=False,labels=None,bal_val=1):
     to_bal = len(labels)<4 #TO CHANGE 

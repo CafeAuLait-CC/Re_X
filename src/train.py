@@ -100,11 +100,11 @@ checkpointer = ModelCheckpoint(filepath=TRAIN_PATH+'/model.hdf5', verbose=0, sav
 breakPateau = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=0, mode='auto', epsilon=0.0001, cooldown=0, min_lr=0)
 #plotter = plotting.PlotLoss(TRAIN_PATH, x_img, y_img, x_img_val, y_img_val, patch_size, patch_out=patch_size_out, labels=label)
 # plotter = plotting.PlotLoss(TRAIN_PATH, None, None, None, None, None, plot_images=False)
-plotter = plotting.PlotLoss(TRAIN_PATH, x_img, y_img, x_img_val, y_img_val, patch_size, None)
+plotter = plotting.PlotLoss(TRAIN_PATH, x_img, y_img, x_img_val, y_img_val, patch_size, patch_size, None)
 
 print("Setting up Network")
 pixels_with_road = load.load_road_pixel_index(REAL_PATH)
 generator = proc.generate_patch(x_img,y_img,patch_size,batch_size=batch_size,augment=False, defer=True)
 # generator = proc.generate_patch_road(x_img,y_img, pixels_with_road,patch_size,batch_size=batch_size,augment=False, defer=True)
 
-model.fit_generator(generator,steps_per_epoch=16,epochs=500000,callbacks=[checkpointer],use_multiprocessing=True)
+model.fit_generator(generator,steps_per_epoch=16,epochs=500000,callbacks=[checkpointer,plotter],use_multiprocessing=True)
