@@ -106,7 +106,7 @@ def load_road_pixel_index(REAL_PATH, comp=False):
     sets_imgs_road_pixel = []
     print("Loading: "+path)
     for item in filename:
-        f = open(item, "r")
+        f = open(paths[0]+'/'+item, "r")
         lines = f.readlines()
         lines = list(set(list(map(int, lines))))
         sets_imgs_road_pixel.append(lines)

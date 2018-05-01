@@ -1,2 +1,3 @@
 data/out/*
 src/*.pyc
+*DS_Store
