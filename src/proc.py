@@ -65,7 +65,7 @@ def catimg(ys,n_classes):
 def gen_kernel(img,w,h,x,y,center=True):
     if center:
         xoff = w//2
-        yoff = h//2    
+        yoff = h//2 
         l = x - xoff
         r = x + xoff + 1   
         u = y - yoff
@@ -87,7 +87,7 @@ def generator_predict(x_i,w,h,max,limit):
         pad = ((mid,mid),(mid,mid),(0,0))
         x_i = np.pad(x_i,pad,'constant')
         for x_pixel in range(0, x_i.shape[0]-w+1):  
-            for y_pixel in range(0, x_i.shape[1]-h+1):              
+            for y_pixel in range(0, x_i.shape[1]-h+1):
                 patches.append(gen_kernel(x_i,w,h,x_pixel,y_pixel,center=False))
                 if (x_pixel+1)*(y_pixel+1)==max or len(patches)>=limit:
                     yield (np.array(patches))
@@ -151,7 +151,7 @@ def gen_patch_cpu(x_i,w,h,start,section,q):
     patches = []
     for pixel in range(start,section+start): 
         x_pixel = pixel//(x_i.shape[0]-w+1)
-        y_pixel = pixel%(x_i.shape[1]-h+1)              
+        y_pixel = pixel%(x_i.shape[1]-h+1)        
         patches.append(gen_kernel(x_i,w,h,x_pixel,y_pixel,center=False))
     q.put(patches)
 
@@ -214,15 +214,15 @@ def augment(x_patch,y_patch,patch_size):
     
     #zf = np.random.uniform()*5
     #if zf > 4:
-    #    zf = ((zf-4)*2)+1
-    #    resize_patch = (int(patch_size[0]*zf),int(patch_size[1]*zf),y_patch.shape[2])
-    #    y_patch1 = misc.imresize(y_patch[:,:,:3],resize_patch,interp="nearest")
-    #    y_patch2 = misc.imresize(y_patch[:,:,3:],resize_patch,interp="nearest")
-    #    y_patch = np.concatenate([y_patch1,y_patch2],axis=2)
-    #    x_patch = misc.imresize(x_patch,resize_patch,interp="nearest")
-    #    offset = (y_patch.shape[0]-patch_size[0])//2
-    #    y_patch = y_patch[offset:offset+patch_size[0],offset:offset+patch_size[0],:]
-    #    x_patch = x_patch[offset:offset+patch_size[0],offset:offset+patch_size[0],:]
+    #   zf = ((zf-4)*2)+1
+    #   resize_patch = (int(patch_size[0]*zf),int(patch_size[1]*zf),y_patch.shape[2])
+    #   y_patch1 = misc.imresize(y_patch[:,:,:3],resize_patch,interp="nearest")
+    #   y_patch2 = misc.imresize(y_patch[:,:,3:],resize_patch,interp="nearest")
+    #   y_patch = np.concatenate([y_patch1,y_patch2],axis=2)
+    #   x_patch = misc.imresize(x_patch,resize_patch,interp="nearest")
+    #   offset = (y_patch.shape[0]-patch_size[0])//2
+    #   y_patch = y_patch[offset:offset+patch_size[0],offset:offset+patch_size[0],:]
+    #   x_patch = x_patch[offset:offset+patch_size[0],offset:offset+patch_size[0],:]
     '''
     if np.random.random() < 0.5:
         y_patch = np.flip(y_patch, 0)
@@ -263,7 +263,7 @@ def gen_aug_seq(x,y,patch_size,batch_size=64):
                     x_patch = x[i][x_ind:x_ind+constrained_patch,y_ind:y_ind+constrained_patch,:]
                     x_patch,y_patch = augment(x_patch,y_patch,patch_size)
                     y_train.append(y_patch)
-                    x_train.append(x_patch)               
+                    x_train.append(x_patch)      
                     if len(y_train) == batch_size:
                         y_train = np.array(y_train)
                         x_train = np.array(x_train)
@@ -442,7 +442,7 @@ def gen_predef(path,batch_size=64):
         f_names.extend(sorted(file_names))
         break
     i = 0 
-    while True:        
+    while True:  
         x_train = []
         y_train = []
         while len(y_train) < batch_size:
@@ -482,7 +482,7 @@ def get_aug(x,y,patch_size,patch_size_out,batch_size=64):
                 out_y = (patch_size[1]//2)-(patch_size_out[1]//2)
                 y_patch = y_patch[out_x+1:-out_x,out_y+1:-out_y]
             y_train.append(y_patch)
-            x_train.append(x_patch)               
+            x_train.append(x_patch)      
             if len(y_train) == part_size*(i+1):
                 break
     y_train = np.array(y_train)
@@ -506,7 +506,7 @@ def generator_train_patch(x,x_g,w,h,w_out=0,batch_size=64,categorical=False):
             for val in sel_vals:
                 x_ind,y_ind = get_xy(val,(y_img.shape[0]-w))
                 y_train.append(gen_kernel(y_img,w_out,w_out,x_ind+offset,y_ind+offset,center=False))
-                x_train.append(gen_kernel(x_img,w,h,x_ind,y_ind,center=False))               
+                x_train.append(gen_kernel(x_img,w,h,x_ind,y_ind,center=False))         
                 if len(y_train) == part_size*(i+1):
                     break
         y_train = np.array(y_train,dtype=int)
@@ -544,7 +544,7 @@ def generator_train(x,x_g,w,h,CAT=None,batch_size=256):
             y_img = classes.classimg(x_g[i])
             x_img = np.pad(x_img,pad,'constant')
             sel_vals = np.random.permutation(y_img.shape[0]*y_img.shape[1])
-            j = 0    
+            j = 0   
             for val in sel_vals:
                 j +=1
                 x_ind,y_ind = get_xy(val,y_img.shape[0])
@@ -556,7 +556,7 @@ def generator_train(x,x_g,w,h,CAT=None,batch_size=256):
                 else:
                    continue   
                 y_train.append(y_patch)
-                x_train.append(gen_kernel(x_img,w,h,x_ind,y_ind,center=False))               
+                x_train.append(gen_kernel(x_img,w,h,x_ind,y_ind,center=False))         
                 if len(balance) == 5:
                     balance=[]
                 if len(y_train) == part_size*(i+1):
@@ -582,7 +582,7 @@ def gen_data(x,x_g,shape,train=True,amount=1000):
         x_img = x[i]
         y_img = x_g[i]
 
-        xs,ys = find_work_area(x_img,shape)      
+        xs,ys = find_work_area(x_img,shape)   
         vals = xs*ys
 
         sel_vals = np.random.permutation(np.array(range(0, vals)))[:amount]
