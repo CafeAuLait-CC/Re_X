@@ -238,7 +238,12 @@ def test_img(x_i,i):
     result_2 = classes.declassimg2(np.argmax(result_1,axis=2),map=True)
     #misc.imsave(RESULT_PATH_BASE+"/crf/"+number+".png",result_3)
     # misc.imsave(RESULT_PATH_BASE+"/avg/"+number+".png",result_2)
-    misc.imsave(RESULT_PATH_BASE+"/avg/"+number+".png",result_1)
+    print(result_1.shape)
+    res = []
+    for i in range(0, result_1.shape[0]):
+        res.append(result_1[i].ravel())
+    res = np.array(res)
+    misc.imsave(RESULT_PATH_BASE+"/avg/"+number+".png",res)
 
 
 
