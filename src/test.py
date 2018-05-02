@@ -237,8 +237,9 @@ def test_img(x_i,i):
     #result_3 = classes.declassimg2(result_3,map=True)
     result_2 = classes.declassimg2(np.argmax(result_1,axis=2),map=True)
     #misc.imsave(RESULT_PATH_BASE+"/crf/"+number+".png",result_3)
-    misc.imsave(RESULT_PATH_BASE+"/avg/"+number+".png",result_2)
-    
+    # misc.imsave(RESULT_PATH_BASE+"/avg/"+number+".png",result_2)
+    misc.imsave(RESULT_PATH_BASE+"/avg/"+number+".png",result_1)
+
 
 
 i=-1
