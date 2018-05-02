@@ -1,3 +1,4 @@
 data/out/*
 src/*.pyc
 *DS_Store
+cv2.so
