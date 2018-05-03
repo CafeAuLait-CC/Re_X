@@ -54,7 +54,7 @@ else:
 
 #----KERAS ENV-------
 
-os.environ["THEANO_FLAGS"]='device='+device
+os.environ["CUDA_VISIBLE_DEVICES"] = str(device)
 sys.setrecursionlimit(50000)
 
 import load,proc,math,plotting,model
