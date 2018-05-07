@@ -16,7 +16,7 @@ ar.add_argument('--load_balance', action='store_true', help='Option defining whe
 ar.add_argument('--continue_model', action='store_true', help='Option defining whether to continue existing model')
 ar.add_argument('--dilate', action='store_true', help='Transfer weights into dilation convolutions')
 args = ar.parse_args()
-device = 'cuda'+str(args.gpu)
+device = str(args.gpu)
 name = args.name
 model_name = args.model_name
 patch_size = (args.patch_size,args.patch_size)
@@ -54,7 +54,7 @@ else:
 
 #----KERAS ENV-------
 
-os.environ["CUDA_VISIBLE_DEVICES"] = str(device)
+os.environ["CUDA_VISIBLE_DEVICES"] = device
 sys.setrecursionlimit(50000)
 
 import load,proc,math,plotting,model
