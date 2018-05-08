@@ -25,7 +25,7 @@ if labels:
 #----Image Paths---
 
 BASE_PATH = '../data/'
-REAL_PATH = BASE_PATH+'real/'
+REAL_PATH = BASE_PATH+'real/1/'
 OUT_PATH = BASE_PATH+'out/'
      
 TRAIN_PATH = OUT_PATH+name
