@@ -13,7 +13,7 @@ ar.add_argument('interval', type = int, help = "Please enter processing interval
 ar.add_argument('--comp', action='store_true', help='Option defining whether process competition images')
 ar.add_argument('-l','--labels', action='append', help="Option to select specific training labels \nOTHER = 0\nTREE = 1\nBUILDING = 2\nCAR = 3\nVEG = 4\nGROUND = 5")
 args = ar.parse_args()
-device = 'cuda'+str(args.gpu)
+device = str(args.gpu)
 name = args.name
 interval = args.interval
 patch_size = (args.patch_size,args.patch_size)
@@ -52,7 +52,7 @@ os.makedirs(RESULT_PATH_BASE+'/avg')
 
 #----KERAS ENV-------
 
-os.environ["THEANO_FLAGS"]='device='+device
+os.environ["CUDA_VISIBLE_DEVICES"]=device
 sys.setrecursionlimit(50000)
 
 
