@@ -327,7 +327,7 @@ def get_pixels_around_center(center_x, center_y, patch_size, img_size):
     pixels_around = range(start_x * img_size[1] + start_y, start_x * img_size[1] + start_y + patch_size[0] * patch_size[1])
     return pixels_around
 
-def generate_patch(xs,ys,patch_size, batch_size=64, augment=False, defer=False):
+def generate_patch(xs,ys,patch_size, batch_size=64, augment=True, defer=False):
     x_train = []
     y_train = []
 
