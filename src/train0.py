@@ -103,8 +103,8 @@ breakPateau = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, ver
 plotter = plotting.PlotLoss(TRAIN_PATH, x_img, y_img, x_img_val, y_img_val, patch_size, patch_size, None)
 
 print("Setting up Network")
-pixels_with_road = load.load_road_pixel_index(REAL_PATH)
-generator = proc.generate_patch(x_img,y_img,patch_size,batch_size=batch_size,augment=False, defer=True)
+# pixels_with_road = load.load_road_pixel_index(REAL_PATH)
+generator = proc.generate_patch(x_img,y_img,patch_size,batch_size=batch_size,augment=True, defer=True)
 # generator = proc.generate_patch_road(x_img,y_img, pixels_with_road,patch_size,batch_size=batch_size,augment=False, defer=True)
 
 model.fit_generator(generator,steps_per_epoch=16,epochs=500000,callbacks=[checkpointer,plotter],use_multiprocessing=True)
