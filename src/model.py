@@ -1,4 +1,7 @@
 import mynet
+import resnet50
+import unet
+import classnet
 
 def gen(input_shape,model,nclasses=177,p_out=None):
     if model=='mynet':

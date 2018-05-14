@@ -111,7 +111,10 @@ else:
 
 checkpointer = ModelCheckpoint(filepath=TRAIN_PATH+'/model.hdf5', verbose=0, save_best_only=False)
 breakPateau = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=0, mode='auto', epsilon=0.0001, cooldown=0, min_lr=0)
-plotter = plotting.PlotLoss(TRAIN_PATH, x_img, y_img, x_img_val,y_img_val,patch_size,patch_out=patch_size_out,labels=label) if not predef and not single_pixel_out else plotting.PlotLoss(TRAIN_PATH, None, None, None, None, None, plot_images=False)
+# plotter = plotting.PlotLoss(TRAIN_PATH, x_img, y_img, x_img_val,y_img_val,patch_size,patch_out=patch_size_out,labels=label) if not predef and not single_pixel_out else plotting.PlotLoss(TRAIN_PATH, None, None, None, None, None, plot_images=False)
+
+plotter = plotting.PlotLoss(TRAIN_PATH, x_img, y_img, x_img_val, y_img_val, patch_size, patch_size, None)
+
 
 print("Setting up Network")
 
