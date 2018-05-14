@@ -149,43 +149,43 @@ def build_rmse(img_size,nclasses=6):
 
 #     return Model(inputs=input, outputs=out)
 
-# def build(img_size,nclasses=6):
-#     ps0,ps1,depth = img_size
+def build(img_size,nclasses=6):
+    ps0,ps1,depth = img_size
 
-#     input = Input((ps0,ps1,depth))
+    input = Input((ps0,ps1,depth))
 
-#     a1 = _blocker(1,16,cardinality=4)(input)
-#     a2 = MaxPooling2D((2,2))(a1)
+    a1 = _blocker(1,16,cardinality=4)(input)
+    a2 = MaxPooling2D((2,2))(a1)
 
-#     b1 = _blocker(1,32,cardinality=8)(a2)
-#     b2 = MaxPooling2D((2,2))(b1)
+    b1 = _blocker(1,32,cardinality=8)(a2)
+    b2 = MaxPooling2D((2,2))(b1)
     
-#     c1 = _blocker(1,64,cardinality=16)(b2)
-#     c2 = MaxPooling2D((2,2))(c1)
+    c1 = _blocker(1,64,cardinality=16)(b2)
+    c2 = MaxPooling2D((2,2))(c1)
     
-#     midl = _conv2D(128,3,padding="valid")(c2)
-#     imid = _conv2DTran(64,3,padding="valid")(midl)
-#     #mod = Model(inputs=input, outputs=imid)
+    midl = _conv2D(128,3,padding="valid")(c2)
+    imid = _conv2DTran(64,3,padding="valid")(midl)
+    #mod = Model(inputs=input, outputs=imid)
 
-#     ic2 = UpSampling2D((2,2))(imid)
-#     ic2_c1 = Concatenate()([ic2,c1])
-#     ic1 = _blocker(1,32,cardinality=8)(ic2_c1)
+    ic2 = UpSampling2D((2,2))(imid)
+    ic2_c1 = Concatenate()([ic2,c1])
+    ic1 = _blocker(1,32,cardinality=8)(ic2_c1)
 
-#     ib2 = UpSampling2D((2,2))(ic1)
-#     ib2_b1 = Concatenate()([ib2,b1])
-#     ib1 = _blocker(1,16,cardinality=4)(ib2_b1)
+    ib2 = UpSampling2D((2,2))(ic1)
+    ib2_b1 = Concatenate()([ib2,b1])
+    ib1 = _blocker(1,16,cardinality=4)(ib2_b1)
 
-#     ia2 = UpSampling2D((2,2))(ib1)
-#     ia2_a1 = Concatenate()([ia2,a1])
-#     ia1 = _blocker(1,8,cardinality=2)(ia2_a1)
+    ia2 = UpSampling2D((2,2))(ib1)
+    ia2_a1 = Concatenate()([ia2,a1])
+    ia1 = _blocker(1,8,cardinality=2)(ia2_a1)
 
-#     ifinal_input = Concatenate()([ia1,input])
-#     ifinal = _conv2D(nclasses, 1, padding="valid")(ifinal_input)
-#     i = Reshape((ps0*ps1,nclasses))(ifinal)
-#     iax = Activation("softmax")(i)
-#     out = Reshape((ps0,ps1,nclasses))(iax)
+    ifinal_input = Concatenate()([ia1,input])
+    ifinal = _conv2D(nclasses, 1, padding="valid")(ifinal_input)
+    i = Reshape((ps0*ps1,nclasses))(ifinal)
+    iax = Activation("softmax")(i)
+    out = Reshape((ps0,ps1,nclasses))(iax)
 
-#     return Model(inputs=input, outputs=out)
+    return Model(inputs=input, outputs=out)
 
 # def build(img_size,nclasses=6):
 #     ps0,ps1,depth = img_size

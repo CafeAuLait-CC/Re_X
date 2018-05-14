@@ -173,13 +173,13 @@ def preprocess_ys(ys,xs,labels=[0,1,2,3,4,5]):
     null_rep = np.zeros(len(labels))
     null_rep[0] =1
     for i,j in zip(ys,xs):
-        if i.shape != j.shape:
-            i = misc.imresize(i,j.shape,interp='nearest')//255
+        # if i.shape != j.shape:
+        #     i = misc.imresize(i,j.shape,interp='nearest')//255
         i = classes.classimg(i,map=True,labels=labels)
-        i_res = i.reshape((i.size,1))
-        i_cat = label_binarize(i_res,[0,1,2,3,4,5])
-        i_cat = i_cat.reshape((i.shape[:2]+(6,))).astype(int)
-        i_cat = i_cat[:,:,labels]
+        i_res = i.reshape((i.size,1)).astype(int)
+        i_cat = label_binarize(i_res,labels)
+        i_cat = i_cat.reshape((i.shape[:2]+(len(labels),))).astype(int)
+        i_cat = i_cat[:,:,range(0, len(labels))]
         #i_cat = np.apply_along_axis(remove_zero,2,i_cat,null_rep)
         y_out.append(i_cat)
     return y_out

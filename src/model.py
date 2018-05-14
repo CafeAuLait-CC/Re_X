@@ -1,6 +1,6 @@
 import mynet
 
-def gen(input_shape,model,nclasses=6,p_out=None):
+def gen(input_shape,model,nclasses=177,p_out=None):
     if model=='mynet':
         if not nclasses:
             return mynet.build_rmse(input_shape)
