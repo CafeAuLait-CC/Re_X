@@ -1,6 +1,6 @@
 import numpy as np
 from enum import Enum
-import random
+# import random
 
 class Color(Enum):
     RED = 0
@@ -112,6 +112,8 @@ def declassimg2(ys, map=False,cats=None):
     ys = ys.astype(int)
     if map:
         y_comp = np.copy(ys)
+        label = range(80, 256, 1)
+        label = [0]+label
         for k, v in getmap():              
             y_comp[ys==v]= k
         ys = np.copy(y_comp)
@@ -134,12 +136,12 @@ def classimg(ys,map=False,labels=[0,1,2,3,4,5]):
     return y_comp
    
 def getmap(labels=None):
-    keys=labels#[1,2,4,3,6,7]
-    random.shuffle(keys)
-    vals=[0] * len(labels)#[0,0,0,0,0,0]
+    keys=labels # [1,2,4,3,6,7]
+    # random.shuffle(keys)
+    vals=[0] * len(labels) # [0,0,0,0,0,0]
     if labels:
         for l in range(0, len(labels)):
-            vals[l]=labels[l]
+            vals[l]=l
     else:
-        vals=[0,1,2,3,4,5]
+        vals=labels # [0,1,2,3,4,5]
     return zip(keys,vals)

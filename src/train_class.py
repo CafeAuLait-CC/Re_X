@@ -30,8 +30,8 @@ single_pixel_out = False
 label = args.labels
 
 if label ==  None:
-    label = range(80, 256, 1)
-    label = [0]+label
+    label = range(0, 177)
+    # label = [0]+label
 else:
     label = list(map(int, label))
 if len(label)<6:
