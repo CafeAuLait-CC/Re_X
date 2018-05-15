@@ -231,8 +231,8 @@ def test_img(x_i,i):
     #result_1 += mul*resultcent
     #result_1 = result_1/((mul)+1)
     if labels:
-       result_full = np.zeros((x_i.shape[0],x_i.shape[1],6))
-       result_full[:,:,labels] = result_1
+       result_full = np.zeros((x_i.shape[0],x_i.shape[1],177))
+       result_full[:,:,range(0, 177)] = result_1
        result_1 = result_full  
     #result_3 = crf(result_1,x_i)
     #result_3 = classes.declassimg2(result_3,map=True)
