@@ -11,7 +11,8 @@ ar.add_argument('name', type = str, help = "Please model name")
 ar.add_argument('patch_size', type = int, help = "Please enter model patch size")
 ar.add_argument('interval', type = int, help = "Please enter processing interval")
 ar.add_argument('--comp', action='store_true', help='Option defining whether process competition images')
-ar.add_argument('-l','--labels', action='append', help="Option to select specific training labels \nOTHER = 0\nTREE = 1\nBUILDING = 2\nCAR = 3\nVEG = 4\nGROUND = 5")
+# ar.add_argument('-l','--labels', action='append', help="Option to select specific training labels \nOTHER = 0\nTREE = 1\nBUILDING = 2\nCAR = 3\nVEG = 4\nGROUND = 5")
+ar.add_argument('-l','--labels', action='store_true', help='Option defining whether using calssification')
 args = ar.parse_args()
 device = str(args.gpu)
 name = args.name
@@ -20,7 +21,7 @@ patch_size = (args.patch_size,args.patch_size)
 comp = args.comp
 labels = args.labels
 if labels:
-    labels = list(map(int, labels))
+    labels = range(80, 256, 1) # list(map(int, labels))
     labels = [0]+labels
 #----Image Paths---
 
@@ -144,9 +145,9 @@ def test_img(x_i,i):
     concat = []
     number = str(i).zfill(4)#str(i*2+EVEN).zfill(4)
     
-    result_img = np.zeros((x_i.shape[0],x_i.shape[1],6))
-    result_cen = np.zeros((x_i.shape[0],x_i.shape[1],6))
-    result_edg = np.zeros((x_i.shape[0],x_i.shape[1],6))
+    result_img = np.zeros((x_i.shape[0],x_i.shape[1],177))
+    result_cen = np.zeros((x_i.shape[0],x_i.shape[1],177))
+    result_edg = np.zeros((x_i.shape[0],x_i.shape[1],177))
     img_count = 0
     edg_count = 0
     for rot in range(0, 1):
