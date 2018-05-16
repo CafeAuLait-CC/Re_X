@@ -21,8 +21,8 @@ patch_size = (args.patch_size,args.patch_size)
 comp = args.comp
 labels = args.labels
 if labels:
-    labels = range(80, 256, 1) # list(map(int, labels))
-    labels = [0]+labels
+    labels = range(0, 177) # list(map(int, labels))
+    # labels = [0]+labels
 #----Image Paths---
 
 BASE_PATH = '../data/'
@@ -240,10 +240,10 @@ def test_img(x_i,i):
     #misc.imsave(RESULT_PATH_BASE+"/crf/"+number+".png",result_3)
     # misc.imsave(RESULT_PATH_BASE+"/avg/"+number+".png",result_2)
     res = []
-    for i in range(0, result_1.shape[0]):
-        res.append(result_1[i].ravel())
+    for i in range(0, result_2.shape[0]):
+        res.append(result_2[i].ravel())
     res = np.array(res)
-    misc.imsave(RESULT_PATH_BASE+"/avg/"+number+".png",res)
+    misc.imsave(RESULT_PATH_BASE+"/avg/"+number+".png",result_2)
 
 
 

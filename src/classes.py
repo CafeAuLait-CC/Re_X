@@ -112,14 +112,13 @@ def declassimg2(ys, map=False,cats=None):
     ys = ys.astype(int)
     if map:
         y_comp = np.copy(ys)
-        label = range(80, 256, 1)
-        label = [0]+label
-        for k, v in getmap():              
+        label = range(0, 177)
+        for k, v in getmap(labels=label):              
             y_comp[ys==v]= k
         ys = np.copy(y_comp)
     if len(ys.shape) ==3:
         ys = np.reshape(ys,(ys.shape[:2]))
-    y_out = np.empty((ys.shape[0],ys.shape[1],3))
+    y_out = np.empty((ys.shape[0],ys.shape[1],1)) # 3))
     y_out[:,:,0] = np.mod(ys,2)
     y_out[:,:,1] = np.mod((ys//2),2)
     y_out[:,:,2] = np.mod((ys//4),2)

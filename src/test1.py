@@ -21,8 +21,8 @@ patch_size = (args.patch_size,args.patch_size)
 comp = args.comp
 labels = args.labels
 if labels:
-    labels = range(80, 256, 1) # list(map(int, labels))
-    labels = [0]+labels
+    labels = range(0, 177) # list(map(int, labels))
+    # labels = [0]+labels
 #----Image Paths---
 
 BASE_PATH = '../data/'
