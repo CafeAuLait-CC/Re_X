@@ -120,8 +120,8 @@ def declassimg2(ys, map=False,cats=None):
         ys = np.reshape(ys,(ys.shape[:2]))
     y_out = np.empty((ys.shape[0],ys.shape[1],1)) # 3))
     y_out[:,:,0] = np.mod(ys,2)
-    y_out[:,:,1] = np.mod((ys//2),2)
-    y_out[:,:,2] = np.mod((ys//4),2)
+    # y_out[:,:,1] = np.mod((ys//2),2)
+    # y_out[:,:,0] = np.mod((ys//4),2)
     return y_out
 
 def classimg(ys,map=False,labels=[0,1,2,3,4,5]):
