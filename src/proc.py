@@ -176,6 +176,7 @@ def preprocess_ys(ys,xs,labels=[0,1,2,3,4,5]):
         # if i.shape != j.shape:
         #     i = misc.imresize(i,j.shape,interp='nearest')//255
         i = classes.classimg(i,map=True,labels=labels)
+        i = i * 255 # add by alex
         i_res = i.reshape((i.size,1)).astype(int)
         i_cat = label_binarize(i_res,labels)
         i_cat = i_cat.reshape((i.shape[:2]+(len(labels),))).astype(int)
