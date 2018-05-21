@@ -122,7 +122,7 @@ def declassimg2(ys, map=False,cats=None):
     y_out[:,:,0] = np.mod(ys,2)
     # y_out[:,:,1] = np.mod((ys//2),2)
     # y_out[:,:,0] = np.mod((ys//4),2)
-    return y_out
+    return y_out/255
 
 def classimg(ys,map=False,labels=[0,1,2,3,4,5]):
     y_out = ys#[:,:,0]+(2*ys[:,:,1])+(4*ys[:,:,2])
