@@ -144,7 +144,7 @@ def test_img(x_i,i):
     
     concat = []
     number = str(i).zfill(4)#str(i*2+EVEN).zfill(4)
-    
+    x_i = x_i * 255 # add by alex
     result_img = np.zeros((x_i.shape[0],x_i.shape[1],177))
     result_cen = np.zeros((x_i.shape[0],x_i.shape[1],177))
     result_edg = np.zeros((x_i.shape[0],x_i.shape[1],177))
