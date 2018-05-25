@@ -273,60 +273,60 @@ def gen_aug_seq(x,y,patch_size,batch_size=64):
                         y_train = []
 
 
-def generate_patch_road(xs,ys,patch_locations,patch_size, batch_size=64, augment=False, defer=False):
-    x_train = []
-    y_train = []
+# def generate_patch_road(xs,ys,patch_locations,patch_size, batch_size=64, augment=False, defer=False):
+#     x_train = []
+#     y_train = []
 
-    while True:
-        #load all road locations into "patch_locations"
-        # patch_locations = []
-        sum_locations = 0
-        all_locations = []
-        for y in ys:
-            f = open("filename", 'r')
-            lines = f.readlines()
-            f.close()
-            locations = len(lines)
-            sum_locations += locations
-            all_locations.append(locations)
-            # patch_locations.append(list(map(int, lines)))
-        patch_index = [0]*len(ys)
-        i = 0
-        while sum(patch_index) < sum_locations:
-            #If patch_index has not reached all locations
-            if patch_index[i] < all_locations[i]:
-                index=patch_locations[i][patch_index[i]]
-                x_patch = get_patch(xs[i], patch_size, index)
-                y_patch = get_patch(ys[i], patch_size, index)
-                if defer or (augment and np.random.random() < 0.5):
-                    y_patch = np.fliplr(y_patch)
-                    x_patch = np.fliplr(x_patch)
-                x_train.append(x_patch)
-                y_train.append(y_patch)
-                patch_index[i] += 1
-            i+=1
-            i = i%len(ys)
+#     while True:
+#         #load all road locations into "patch_locations"
+#         # patch_locations = []
+#         sum_locations = 0
+#         all_locations = []
+#         for y in ys:
+#             f = open("filename", 'r')
+#             lines = f.readlines()
+#             f.close()
+#             locations = len(lines)
+#             sum_locations += locations
+#             all_locations.append(locations)
+#             # patch_locations.append(list(map(int, lines)))
+#         patch_index = [0]*len(ys)
+#         i = 0
+#         while sum(patch_index) < sum_locations:
+#             #If patch_index has not reached all locations
+#             if patch_index[i] < all_locations[i]:
+#                 index=patch_locations[i][patch_index[i]]
+#                 x_patch = get_patch(xs[i], patch_size, index)
+#                 y_patch = get_patch(ys[i], patch_size, index)
+#                 if defer or (augment and np.random.random() < 0.5):
+#                     y_patch = np.fliplr(y_patch)
+#                     x_patch = np.fliplr(x_patch)
+#                 x_train.append(x_patch)
+#                 y_train.append(y_patch)
+#                 patch_index[i] += 1
+#             i+=1
+#             i = i%len(ys)
 
-            if len(y_train) == batch_size:
-                y_train = np.array(y_train)
-                x_train = np.array(x_train)
-                yield x_train, y_train
-                x_train = []
-                y_train = []
+#             if len(y_train) == batch_size:
+#                 y_train = np.array(y_train)
+#                 x_train = np.array(x_train)
+#                 yield x_train, y_train
+#                 x_train = []
+#                 y_train = []
 
-def get_pixels_around_center(center_x, center_y, patch_size, img_size):
-    if (center_x - patch_size[0]/2) < 0 or (center_y - patch_size[1]/2) < 0:
-        start_x = max(center_x - patch_size[0]/2, 0)
-        start_y = max(center_y - patch_size[1]/2, 0)
-        pixels_around = range(start_x * img_size[1] + start_y, start_x * img_size[1] + start_y + patch_size[0] * patch_size[1])
-        return pixels_around    # in index form
-    if (center_x + patch_size[0]/2) > img_size[0] or (center_y + patch_size[1]/2) > img_size[1]:
-        start_x = min(center_x - patch_size[0]/2, img_size[0] - patch_size[0])
-        start_y = min(center_y - patch_size[1]/2, img_size[1] - patch_size[1])
-        pixels_around = range(start_x * img_size[1] + start_y, start_x * img_size[1] + start_y + patch_size[0] * patch_size[1])
-        return pixels_around
-    pixels_around = range(start_x * img_size[1] + start_y, start_x * img_size[1] + start_y + patch_size[0] * patch_size[1])
-    return pixels_around
+# def get_pixels_around_center(center_x, center_y, patch_size, img_size):
+#     if (center_x - patch_size[0]/2) < 0 or (center_y - patch_size[1]/2) < 0:
+#         start_x = max(center_x - patch_size[0]/2, 0)
+#         start_y = max(center_y - patch_size[1]/2, 0)
+#         pixels_around = range(start_x * img_size[1] + start_y, start_x * img_size[1] + start_y + patch_size[0] * patch_size[1])
+#         return pixels_around    # in index form
+#     if (center_x + patch_size[0]/2) > img_size[0] or (center_y + patch_size[1]/2) > img_size[1]:
+#         start_x = min(center_x - patch_size[0]/2, img_size[0] - patch_size[0])
+#         start_y = min(center_y - patch_size[1]/2, img_size[1] - patch_size[1])
+#         pixels_around = range(start_x * img_size[1] + start_y, start_x * img_size[1] + start_y + patch_size[0] * patch_size[1])
+#         return pixels_around
+#     pixels_around = range(start_x * img_size[1] + start_y, start_x * img_size[1] + start_y + patch_size[0] * patch_size[1])
+#     return pixels_around
 
 def generate_patch(xs,ys,patch_size, batch_size=64, augment=False, defer=False):
     x_train = []
