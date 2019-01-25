@@ -1,4 +1,4 @@
-data/out/*
-src/*.pyc
+data/*
+*.pyc
 *DS_Store
 cv2.so
