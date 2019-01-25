@@ -1,4 +1,5 @@
-# Re_X - Delineation of Road Networks Using Deep Residual Neural Networks and Iterative Hough Transform
+# Re_X  
+Delineation of Road Networks Using Deep Residual Neural Networks and Iterative Hough Transform
 
 ## Folder structure
 
