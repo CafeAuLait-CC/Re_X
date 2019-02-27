@@ -4,7 +4,7 @@ import os
 
 def get_args():
     ar = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-    ar.add_argument('-n', '--name', type = str, default =  "test", help = "Please training name - for save folder")
+    ar.add_argument('-n', '--name', type = str, default =  "model", help = "Please training name - for save folder")
     ar.add_argument('-m', '--model', type = str, default =  "mynet",help = "Please enter model type - unet,mynet,resnet50")
     ar.add_argument('-i', '--input_folder', type = str, default="../data", help = "Please enter image location")
     ar.add_argument('-o', '--output_folder', type = str, default="./results/", help = "Please enter model save location")

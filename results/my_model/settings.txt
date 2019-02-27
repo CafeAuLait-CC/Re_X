@@ -1,0 +1,12 @@
+name: multi_city
+model: mynet
+input_folder: ../input
+output_folder: ../results/multi_city
+patch_size: 200
+gpu: 1
+batch_size: 32
+no_depth: True
+augment: True
+iter_load: False
+cont: True
+mean: [82.79499011 91.81592295 91.2667053 ]
