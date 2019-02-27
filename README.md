@@ -1,53 +1,20 @@
 # Re_X  
 Delineation of Road Networks Using Deep Residual Neural Networks and Iterative Hough Transform
 
-## Folder structure
+## Train the model
+1. Go to `training & testing` folder and run `python3 mean.py -i ../data/rgb/`
+2. Run `python3 train.py -n TRAINING_NAME`, the trained model will be saved in `results/TRAINING_NAME/model.hdf5`
 
-```bash
-.
-├── post-processing & evaluation
-│   ├── *.cpp
-│   └── *.h
-├── README.md
-├── training & testing
-│   ├── models
-│   │   ├── static
-│   │   │   └── *.py
-│   │   └── *.py
-│   ├── handlers
-│   │   └── *.py
-│   ├── train.py
-│   ├── patch_test.py
-│   └── README.md
-├── data
-│   ├── rgb_ng		# Imagery (RGB) for testing
-│   │   └── *.png/*.tif/*.jpg
-│   ├── out
-│   │   ├── post_processing_result
-│   │   │   └── *.png/*.tif/*.jpg
-│   │   ├── graph
-│   │   │   ├── pred	# .graph files for predictions
-│   │   │   │   └── *.graph
-│   │   │   └── truth	# .graph files for ground truth
-│   │   │       └── *.graph
-│   │   ├── mask
-│   │   │   ├── pred 	# Masks of predictions
-│   │   │   │   └── *.png/*.tif/*.jpg
-│   │   │   └── truth	# Masks of ground truth
-│   │   │       └── *.png/*.tif/*.jpg
-│   │   └── errorImg	# Difference maps
-│   │       ├── *.png/*.tif/*.jpg
-│   │       └── rgb 	# Difference maps on RGB imagery
-│   │           └── *.png/*.tif/*.jpg
-│   ├── rgb 		# Imagery (RGB) for training
-│   │   └── *.png/*.tif/*.jpg
-│   ├── all_patches	# All patches for testing and post-processing
-│   │   ├── pred
-│   │   │   └── *.png/*.tif/*.jpg
-│   │   └── rgb
-│   │       └── *.png/*.tif/*.jpg
-│   ├── y_ng		# Ground truth (grayscale) for testing images
-│   │   └── *.png/*.tif/*.jpg
-│   ├── y 			# Ground truth (grayscale) for training
-│   │   └── *.png/*.tif/*.jpg
-```
+## Inference
+1. Create folder `data/rgb_ng/patches_to_predict/`
+2. Go to `post-processing & evaluation` folder, in `main.cpp` file run the `generateAllPatches()` function to get all patches for inference. After this, you will get a bunch of 200x200 image patches saved in `data/rgb_ng/patches_to_predict/`, the file names of these images represent their location in the original image tile.
+3. Go to `training & testing` folder and run `python3 patch_test.py -n TRAINING_NAME` to inference the road map using the `TRAINING_NAME` model, segmentation result will be saved in `results/TRAINING_NAME/result_on_patches/`
+
+## Post-processing
+1. Create folder `results/TRAINING_NAME/post_processing_result/`
+2. Go to `post-processing & evaluation` folder, in `main.cpp` file run the `cleanUpHoughLineImage()` function to get vectorized result images (final results). Output images will be saved in the folder `post_processing_result/`.
+
+## Evaluation
+1. Create folders `results/TRAINING_NAME/post_processing_result/errorImg/`
+2. Go to `post-processing & evaluation` folder, in `main.cpp` file run the `startEval()` function, a evaluation table called `eval.txt` will be saved in `errorImg` folder
+3. In `main.cpp` file run the `drawDiffMapOnRGB()` function, the difference image will be drew on the rgb imagery and saved in the `errorImg` folder
