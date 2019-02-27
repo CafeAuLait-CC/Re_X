@@ -5,15 +5,17 @@
 #include <opencv2/opencv.hpp>
 #include "MyLine.h"
 
-#define BASE_PATH "../data/"
+#define BASE_PATH "../results/"
 #define P2P_THRESHOLD 30
 #define P2L_THRESHOLD 30
 
+#define MAX_PATCH_LOC_X 81  // 81 needs to be changed
+#define MAX_PATCH_LOC_y 81
+#define IMAGE_TILE_SIZE_ROWS 8192   //8192 needs to be changed
+#define IMAGE_TILE_SIZE_COLS 8192
+
 using namespace std;
 using namespace cv;
-
-void graph2mask(vector<string> cities);
-vector<vector<Point>> readGraphFile(string fileName);
 
 void startEval(vector<string> cities);
 void generateErrorImage(vector<string> cities);
@@ -58,9 +60,7 @@ int main() {
 //    generateAllPatches(cities);   // Gerenate patches for testing
 
 //    cleanUpHoughLineImage();  // Iterative Hough Transform on patches
-    
-//    graph2mask(cities);       // Generate masks from .graph file
-    
+        
 //    startEval(cities);        // Evaluate results (IoU and F1 score)
     
 //    drawDiffMapOnRGB(cities);     // Draw TP, FP, FN on RGB image
@@ -393,7 +393,7 @@ void cleanUpHoughLineImage(string cityName) {
     
     // draw lines on image
     cout << "9. Saving Result..." << endl;
-    Mat outImg = Mat::zeros(8192, 8192, 0);
+    Mat outImg = Mat::zeros(IMAGE_TILE_SIZE_ROWS, IMAGE_TILE_SIZE_COLS, 0);
     vector<vector<Point>> pointPairsToDraw;
     
     for (int i = 0; i < allRoadLines.size(); i++) {
@@ -410,7 +410,7 @@ void cleanUpHoughLineImage(string cityName) {
         int p2_y = p2.getPositionY();
         line(outImg, Point(p1_x, p1_y), Point(p2_x, p2_y), Scalar(255), LINE_AA);
     }
-    imwrite("../data/out/post_processing_result/" + cityName + ".png", outImg);
+    imwrite("../results/my_model/post_processing_result/" + cityName + ".png", outImg); // change model_name & created post_processing_result folder
     cout << "DONE!\nTime used: " << time(NULL) - startTime << " seconds." << endl;
 }
 
@@ -420,10 +420,10 @@ float point2PointDistance(MyPoint p1, MyPoint p2) {
 }
 
 vector<vector<Vec4i>> houghLineOnPatch(string cityName) {
-    string directory = BASE_PATH + "all_patches/pred/";
+    string directory = BASE_PATH + "my_model/result_on_patches/";   // model_name needs to be changed
     vector<vector<Vec4i>> allLines;
-    for (int patch_position_x = 0; patch_position_x < 81; patch_position_x++) {
-        for (int patch_position_y = 0; patch_position_y < 81; patch_position_y++) {
+    for (int patch_position_x = 0; patch_position_x < MAX_PATCH_LOC_X; patch_position_x++) {
+        for (int patch_position_y = 0; patch_position_y < MAX_PATCH_LOC_y; patch_position_y++) {
             string fileName = to_string(patch_position_x) + "_" + to_string(patch_position_y) + ".png";
             //Mat rgbImg = imread(directory + cityName + "_" + fileName);
             Mat predImg = imread(directory + cityName + "_" + fileName, IMREAD_GRAYSCALE);
@@ -455,17 +455,17 @@ vector<vector<Vec4i>> houghLineOnPatch(string cityName) {
             
             // cordination transfer from patch(200 x 200) to image(8192 x 8192)
             for (int i = 0; i < lines.size(); i++) {
-                if (patch_position_x == 80) {
-                    lines[i][0] = lines[i][0] + 7991;   // (8192-1) -200
-                    lines[i][2] = lines[i][2] + 7991;
+                if (patch_position_x == MAX_PATCH_LOC_X - 1) {
+                    lines[i][0] = lines[i][0] + (IMAGE_TILE_SIZE_ROWS - 1) - 200;   // (8192-1) -200
+                    lines[i][2] = lines[i][2] + (IMAGE_TILE_SIZE_ROWS - 1) - 200;
                 }
                 else {
                     lines[i][0] = lines[i][0] + patch_position_x * 100;    // step size 100 or 50
                     lines[i][2] = lines[i][2] + patch_position_x * 100;
                 }
-                if (patch_position_y == 80) {
-                    lines[i][1] = lines[i][1] + 7991;   // (8192-1) -200
-                    lines[i][3] = lines[i][3] + 7991;
+                if (patch_position_y == MAX_PATCH_LOC_y - 1) {
+                    lines[i][1] = lines[i][1] + (IMAGE_TILE_SIZE_COLS - 1) - 200;   // (8192-1) -200
+                    lines[i][3] = lines[i][3] + (IMAGE_TILE_SIZE_COLS - 1) - 200;
                 }
                 else {
                     lines[i][1] = lines[i][1] + patch_position_y * 100;
@@ -582,10 +582,10 @@ Point getIntersectionOfTwoLines(float k, float b, MyLine l) {
 
 void drawDiffMapOnRGB(vector<string> cities){
     string rootPath = BASE_PATH;
-    string directory = "out/";
+    string directory = "my_model/post_processing_result/";  // change model_name
     for (int i = 0; i < cities.size(); i++) {
         Mat diffImg = imread(rootPath + directory + "errorImg/" + cities[i] + ".png");
-        Mat rgbImg = imread(rootPath + "rgb_ng/" + cities[i] + ".png");
+        Mat rgbImg = imread("../data/rgb_ng/" + cities[i] + ".png");
         for (int i = 0; i < diffImg.rows; i++) {
             for (int j = 0; j < diffImg.cols; j++) {
                 if (diffImg.at<Vec3b>(i, j) != Vec3b(0, 0, 0)) {
@@ -594,15 +594,15 @@ void drawDiffMapOnRGB(vector<string> cities){
             }
         }
         
-        imwrite(rootPath + directory + "errorImg/rgb/" + cities[i] + ".png", rgbImg);
+        imwrite(rootPath + directory + "errorImg/" + cities[i] + "_rgb.png", rgbImg);
     }
 }
 
 void generateAllPatches(vector<string> cities) {
     for (int idx = 0; idx < cities.size(); idx++) {
         string path_in = "rgb_ng/";
-        string path_out = "all_patches/rbg/";
-        Mat img = imread(BASE_PATH + path_in + cities[idx] + ".png");
+        string path_out = "rgb_ng/patches_to_predict/";
+        Mat img = imread("../data/" + path_in + cities[idx] + ".png");
         int patchSize = 200;
         int i_count = 0, j_count = 0;
         int overlapSize = 100;
@@ -620,7 +620,7 @@ void generateAllPatches(vector<string> cities) {
                     lastTripJ = true;
                 }
                 Mat patchImg(img, Rect(i, j, patchSize, patchSize));
-                imwrite(BASE_PATH + path_out + cities[idx] + "_" + to_string(i_count) + "_" + to_string(j_count) + ".png", patchImg);
+                imwrite("../data/" + path_out + cities[idx] + "_" + to_string(i_count) + "_" + to_string(j_count) + ".png", patchImg);
                 j_count++;
                 if (lastTripJ) {
                     break;
@@ -636,70 +636,6 @@ void generateAllPatches(vector<string> cities) {
     }
 }
 
-void graph2mask(vector<string> cities) {
-    for (int cityIdx = 0; cityIdx < cities.size(); cityIdx++) {
-        
-        string subDirectory = "out/graph/pred/";
-        string folderName = BASE_PATH + subDirectory;
-        vector<vector<Point>> lines = readGraphFile(folderName + cities[cityIdx] + ".graph");
-        
-        Mat img = Mat::zeros(8192, 8192, 0);    // set mage size
-        Point pt_offset(0, 0);
-//        if (cities[cityIdx] == "boston") {
-//           pt_offset = Point(-4096, 4096);
-//        } else if (cities[cityIdx] == "chicago") {
-//           pt_offset += Point(4096, 4096*2);
-//        } else {
-//            pt_offset += Point(4096, 4096);
-//        }
-        for (int i = 0; i < lines.size(); i++) {
-            Point pt1 = lines[i][0] + pt_offset;
-            Point pt2 = lines[i][1] + pt_offset;
-            cv::line(img, pt1, pt2, Scalar(255), LINE_8);
-        }
-        
-        string outFolder = "out/mask/pred/";
-        imwrite(BASE_PATH + outFolder + cities[cityIdx] + ".png", img);
-    }
-}
-
-vector<vector<Point>> readGraphFile(string fileName) {
-    ifstream inFile(fileName);
-    if (!inFile) {
-        cout << "Failed to load file." << endl;
-        exit(-1);
-    }
-    
-    string line;
-    
-    bool p1Done = false;
-    vector<Point> points;
-    vector<vector<Point>> lines;
-    while (getline(inFile, line)) {
-        if (!p1Done) {
-            unsigned long idx = line.find(" ");
-            if (idx < 20 && idx > 0) {
-                int x_loc = stoi(line.substr(0, idx));
-                int y_loc = stoi(line.substr(idx + 1, line.length()));
-                points.push_back(Point(x_loc, y_loc));
-            } else {
-                p1Done = true;
-            }
-        } else {
-            unsigned long idx = line.find(" ");
-            int pt1Idx = stoi(line.substr(0, idx));
-            int pt2Idx = stoi(line.substr(idx + 1, line.length()));
-            vector<Point> line_segment;
-            line_segment.push_back(points[pt1Idx]);
-            line_segment.push_back(points[pt2Idx]);
-            lines.push_back(line_segment);
-            getline(inFile, line);  // skip the next line
-        }
-    }
-    inFile.close();
-    return lines;
-}
-
 void startEval(vector<string> cities) {
     cout << "   - Generating difference map..." << endl;
     generateErrorImage(cities);
@@ -712,10 +648,9 @@ void generateErrorImage(vector<string> cities) {
     for (int idx = 0; idx < cities.size(); idx++) {
         cout << "       - " << cities[idx] << endl;
         string rootFolder = BASE_PATH;
-        // string method = "my_100/";
-        string baseFolder = rootFolder + "out/";
-        Mat truthImg = imread(baseFolder + "mask/truth/" + cities[idx] + ".png", IMREAD_GRAYSCALE);
-        Mat predImg = imread(baseFolder + "mask/pred/" + cities[idx] + ".png", IMREAD_GRAYSCALE);
+        string baseFolder = rootFolder + "my_model/post_processing_result/";    // change model_name
+        Mat truthImg = imread("../data/y_ng/" + cities[idx] + ".png", IMREAD_GRAYSCALE);
+        Mat predImg = imread(baseFolder + cities[idx] + ".png", IMREAD_GRAYSCALE);
 
         Mat rc = Mat::zeros(truthImg.rows, truthImg.cols, 0);   // red channel
         Mat img;
@@ -760,8 +695,7 @@ void generateErrorImage(vector<string> cities) {
 void evaluateError(vector<string> cities, int thres_value) {
     
     string rootFolder = BASE_PATH;
-    // string method = "my_100/";
-    string baseFolder = rootFolder + "out/errorImg/";
+    string baseFolder = rootFolder + "my_model/post_processing_result/errorImg/";   // change model_name
     ofstream out_file(baseFolder + "eval.txt");
     
     out_file << "City Names\tPrecision\tRecall\tF1\tIoU\n";

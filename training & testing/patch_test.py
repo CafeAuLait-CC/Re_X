@@ -3,17 +3,20 @@ import os
 import handlers.args as args
 import handlers.load as load
 import cv2 as cv
-# from handlers.proc import MyProcess as proc
+
 # from scipy import misc
 arg = args.get_args()
 cityName = arg.city_name
-arg.input_folder = '../data/all_patches/'
-arg.output_folder = '../results/multi_city'
-arg.no_depth = True
+arg.input_folder = '../data/rgb_ng/patches_to_predict/'
+arg.output_folder = '../results/' + arg.name + '/result_on_patches/'
+
+if not os.path.exists(arg.output_folder):
+    os.makedirs(arg.output_folder)
+
 
 #----Load Data---
-print("Loading Images: "+arg.input_folder+"rgb/")
-rgb, rgbFileNames = load.load_data(arg.input_folder+"rgb/", returnNames = True)
+print("Loading Images: " + arg.input_folder)
+rgb, rgbFileNames = load.load_data(arg.input_folder, returnNames = True)
 
 print("Loaded "+ str(len(rgb)) + " images")
 
@@ -27,9 +30,9 @@ os.environ["CUDA_VISIBLE_DEVICES"]=str(arg.gpu)
 from keras.models import Model, load_model
 
 print("Loading Model")
-model = load_model(arg.output_folder+'/model.hdf5', compile=False)
+model = load_model('../results/' + arg.name + '/model.hdf5', compile=False)
 
-train_args = load.get_args(arg.output_folder)
+train_args = load.get_args('../results/' + arg.name)
 arg.mean = np.array(train_args['mean'])
 
 #_!_!_!_!_!_!_RUN NETWORK_!_!_!_!_!_
@@ -74,4 +77,4 @@ for i in range(len(rgbFileNames)):
 
     # img = cv.resize(resImg,(200, 200), interpolation = cv.INTER_CUBIC)
 
-    cv.imwrite(arg.input_folder + "pred/" + rgbFileNames[i], rgbImg)
+    cv.imwrite(arg.output_folder + rgbFileNames[i], rgbImg)

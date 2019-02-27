@@ -7,7 +7,7 @@ def get_args():
     ar.add_argument('-n', '--name', type = str, default =  "model", help = "Please training name - for save folder")
     ar.add_argument('-m', '--model', type = str, default =  "mynet",help = "Please enter model type - unet,mynet,resnet50")
     ar.add_argument('-i', '--input_folder', type = str, default="../data", help = "Please enter image location")
-    ar.add_argument('-o', '--output_folder', type = str, default="./results/", help = "Please enter model save location")
+    ar.add_argument('-o', '--output_folder', type = str, default="../results/", help = "Please enter model save location")
     ar.add_argument('-p', '--patch_size', type = int, default=200, help = "Please enter model patch size")
     ar.add_argument('-g','--gpu', type = int, default=0, help = "Please enter GPU to use")
     ar.add_argument('-b','--batch_size', type = int, default=32, help = "Please enter model batch size")

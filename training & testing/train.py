@@ -35,6 +35,17 @@ from keras.models import Model, load_model
 from keras.callbacks import ModelCheckpoint,ReduceLROnPlateau
 from keras.utils import plot_model
 
+import keras.backend as K
+def uoi_by_mse(true, pred):
+    btrue = K.cast(true, bool)
+    btrue = K.cast(btrue, float)
+    bpred = K.cast(pred, bool)
+    bpred = K.cast(bpred, float)
+    intersection = btrue * bpred
+    notTrue = 1 - btrue
+    union = btrue +(notTrue * bpred)
+    return K.sum(union) / K.sum(intersection) * K.mean(K.square(pred - true), axis=-1)
+    # return (1 + K.epsilon() - K.sum(intersection)/(K.sum(union)+K.epsilon())) * K.mean(K.square(pred - true), axis = -1)
 
 #----COMPILE MODEL---
 if arg.cont:
@@ -47,7 +58,7 @@ else:
     print("Generating Model")
     model = module.build(proc.input_shape,len(proc.y_classes))
     print("Compiling Model")
-    model.compile('RMSprop', 'uoi_by_mse')
+    model.compile('RMSprop', uoi_by_mse)
 
 
 #----CHECKPOINT CALLBACKS -----
