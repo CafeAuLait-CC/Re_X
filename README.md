@@ -4,8 +4,8 @@ Delineation of Road Networks Using Deep Residual Neural Networks and Iterative H
 ## Usage
 
 ### Dataset preparation
-1. Create a folder `data` under this project folder
-2. Create 4 folders `rgb`, `y`, `rgb_ng` and `y_ng`, put RGB imagery into `rgb` folder, ground truth image into `y` folder. `rgb_ng` and `y_ng` are for test set. You can use .jpg, .png or .tif format. 
+1. Create a folder `data/` under this project folder
+2. Create 4 folders `data/rgb`, `data/y`, `data/rgb_ng` and `data/y_ng`, put RGB imagery into `rgb` folder, ground truth image into `y` folder. `rgb_ng` and `y_ng` are for test set. You can use .jpg, .png or .tif format. 
 
 ### Train the model
 1. Go to `training & testing` folder and run `python3 mean.py -i ../data/rgb/`
