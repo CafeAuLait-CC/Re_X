@@ -6,7 +6,7 @@
 //  Copyright © 2018 Alex Xu. All rights reserved.
 //
 
-#include "pch.h"
+// #include "pch.h"
 #include "MyPoint.h"
 
 

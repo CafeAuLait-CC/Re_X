@@ -20,6 +20,7 @@ using namespace cv;
 void startEval(vector<string> cities);
 void generateErrorImage(vector<string> cities);
 void evaluateError(vector<string> cities);
+bool searchAround(int rowIdx, int colIdx, Mat templateImg);
 
 void generateAllPatches(vector<string> cities);
 
@@ -420,7 +421,8 @@ float point2PointDistance(MyPoint p1, MyPoint p2) {
 }
 
 vector<vector<Vec4i>> houghLineOnPatch(string cityName) {
-    string directory = BASE_PATH + "my_model/result_on_patches/";   // model_name needs to be changed
+    string rootPath = BASE_PATH;
+    string directory = rootPath + "my_model/result_on_patches/";   // model_name needs to be changed
     vector<vector<Vec4i>> allLines;
     for (int patch_position_x = 0; patch_position_x < MAX_PATCH_LOC_X; patch_position_x++) {
         for (int patch_position_y = 0; patch_position_y < MAX_PATCH_LOC_y; patch_position_y++) {
@@ -692,7 +694,7 @@ void generateErrorImage(vector<string> cities) {
     
 }
 
-void evaluateError(vector<string> cities, int thres_value) {
+void evaluateError(vector<string> cities) {
     
     string rootFolder = BASE_PATH;
     string baseFolder = rootFolder + "my_model/post_processing_result/errorImg/";   // change model_name
