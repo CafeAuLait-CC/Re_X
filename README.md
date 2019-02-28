@@ -11,9 +11,9 @@ Delineation of Road Networks Using Deep Residual Neural Networks and Iterative H
 1. Go to `training & testing` folder and run `python3 mean.py -i ../data/rgb/`
 2. Run `python3 train.py -n TRAINING_NAME`, the trained model will be saved in `results/TRAINING_NAME/model.hdf5`
 ```
-cd training\ \&\ testing/
-python3 mean.py -i ../data/rgb/
-python3 train.py -n TRAINING_NAME
+$ cd training\ \&\ testing/
+$ python3 mean.py -i ../data/rgb/
+$ python3 train.py -n TRAINING_NAME
 ```
 
 ### Inference
@@ -21,13 +21,13 @@ python3 train.py -n TRAINING_NAME
 2. Go to `post-processing & evaluation` folder, in `main.cpp` file run the `generateAllPatches()` function to get all patches for inference. After this, you will get a bunch of 200x200 image patches saved in `data/rgb_ng/patches_to_predict/`, the file names of these images represent their location in the original image tile.
 3. Go to `training & testing` folder and run `python3 patch_test.py -n TRAINING_NAME` to inference the road map using the `TRAINING_NAME` model, segmentation result will be saved in `results/TRAINING_NAME/result_on_patches/`
 ```
-cd Re_x/
-mkdir data/rgb_ng/patches_to_predict/
+$ cd Re_x/
+$ mkdir data/rgb_ng/patches_to_predict/
 ```
 After running the C++ program:
 ```
-cd training\ \&\ testing/
-python3 patch_test.py -n TRAINING_NAME
+$ cd training\ \&\ testing/
+$ python3 patch_test.py -n TRAINING_NAME
 ```
 
 ### Post-processing
