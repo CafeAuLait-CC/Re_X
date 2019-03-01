@@ -9,8 +9,8 @@
 #define P2P_THRESHOLD 30
 #define P2L_THRESHOLD 30
 
-#define MAX_PATCH_LOC_X 81  // 81 needs to be changed
-#define MAX_PATCH_LOC_y 81
+#define PRE_MAX_PATCH_LOC_X 81  // 81 needs to be changed
+#define PRE_MAX_PATCH_LOC_Y 81
 #define IMAGE_TILE_SIZE_ROWS 8192   //8192 needs to be changed
 #define IMAGE_TILE_SIZE_COLS 8192
 
@@ -24,10 +24,10 @@ bool searchAround(int rowIdx, int colIdx, Mat templateImg);
 
 void generateAllPatches(vector<string> cities);
 
-void cleanUpHoughLineImage(string cityName);
+void cleanUpHoughLineImage(string cityName, Size IMAGE_TILE_SIZE);
 float point2PointDistance(MyPoint p1, MyPoint p2);
 Point getIntersectionOfTwoLines(float k, float b, MyLine l);
-vector<vector<Vec4i>> houghLineOnPatch(string cityName);
+vector<vector<Vec4i>> houghLineOnPatch(string cityName, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y);
 float point2LineDistance(Point p, Vec4i line);
 bool isParallelLine(Vec4i l1, Vec4i l2);
 
@@ -39,7 +39,24 @@ struct ID4DeletedPoint {
 MyPoint getMyPointWithId(int pointId, vector<MyPoint> allPointsVec, vector<ID4DeletedPoint> deletedIDVec);
 int getIndexOfMyPointWithId(int pointId, vector<MyPoint> allPointsVec, vector<ID4DeletedPoint> deletedIDVec);
 
-int main() {
+void parseArgs(int argc, const char * argv[], int &mode, string &INPUT_PATH, string &OUTPUT_PATH, Size &IMAGE_TILE_SIZE, int &MAX_PATCH_LOC_X, int &MAX_PATCH_LOC_Y);
+
+int main(int argc, const char * argv[]) {
+
+    int mode;
+    string INPUT_PATH;
+    string OUTPUT_PATH;
+    Size IMAGE_TILE_SIZE;
+    int MAX_PATCH_LOC_X;
+    int MAX_PATCH_LOC_Y;
+    parseArgs(argc, argv, mode, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);
+
+    cout << mode << endl;
+    cout << INPUT_PATH << endl;
+    cout << OUTPUT_PATH << endl;
+    cout << IMAGE_TILE_SIZE << endl;
+    cout << MAX_PATCH_LOC_X << endl;
+    cout << MAX_PATCH_LOC_Y << endl;
     
     vector<string> cities;
     cities.push_back("amsterdam");
@@ -70,13 +87,108 @@ int main() {
     
 }
 
-void cleanUpHoughLineImage(string cityName) {
+void parseArgs(int argc, const char * argv[], int &mode, string &INPUT_PATH, string &OUTPUT_PATH, Size &IMAGE_TILE_SIZE, int &MAX_PATCH_LOC_X, int &MAX_PATCH_LOC_Y) {
+    if (argc < 4) {
+        cout << "\nUsage: ./Re_X mode input_path output_path [...opts]" << endl;
+        cout << "\n    mode:  0: generateAllPatches()\n\t   1: cleanUpHoughLineImage()\n\t   2: startEval() & drawDiffMapOnRGB()" << endl;
+        cout << "\n    opts:  -w --image_width\t(default 8192)\n\t   -h --image_height\t(default 8192)\n\t   -c --patch_cols\t\t(default 81 -- file name from 0 to 80)\n\t   -r --patch_rows\t\t(default 81 -- file name from 0 to 80)" << endl;
+        exit(-1);
+    }
+    
+    /** Select program running mode.
+        0: generateAllPatches()
+        1: cleanUpHoughLineImage()
+        2: startEval() & drawDiffMapOnRGB()
+    */
+    mode = stoi(argv[1]);
+    if (mode < 0 || mode > 2) {
+        cout << "Wrong mode number!" << endl;
+        exit(-1);
+    }
+    
+    // Get input & output path
+    INPUT_PATH = argv[2];
+    OUTPUT_PATH = argv[3];
+//    if (INPUT_PATH.empty() || OUTPUT_PATH.empty()) {  // try to test if it's correct or not
+//        cout << "Wrong image path" << endl;
+//        wrongArgFlag = true;
+//    }
+    
+    bool w_set = false;
+    bool h_set = false;
+    bool c_set = false;
+    bool r_set = false;
+    
+    if (argc > 4) {
+        if (argc % 2 != 0) {
+            cout << "Wrong argument number!" << endl;
+            exit(-1);
+        }
+        for (int i = 4; i < argc; i += 2) {
+            char arg;
+            if (strlen(argv[i]) == 2) {
+                arg = argv[i][1];
+            } else if (strlen(argv[i]) > 9) {
+                arg = argv[i][8];
+            } else {
+                cout << "Wrong argument name: " << argv[i] << endl;
+                exit(-1);
+            }
+            try {
+                int arg_val = stoi(argv[i+1]);
+                if (arg_val < 1) {
+                    throw arg_val;
+                }
+                switch (arg) {
+                    case 'w':
+                        IMAGE_TILE_SIZE.width = arg_val;
+                        w_set = true;
+                        break;
+                    case 'h':
+                        IMAGE_TILE_SIZE.height = arg_val;
+                        h_set = true;
+                        break;
+                    case 'c':
+                        MAX_PATCH_LOC_X = arg_val;
+                        c_set = true;
+                        break;
+                    case 'r':
+                        MAX_PATCH_LOC_Y = arg_val;
+                        r_set = true;
+                        break;
+                    default:
+                        cout << "Wrong argument name: " << argv[i] << endl;
+                        exit(-1);
+                };
+            } catch (...) {
+                cout << "Invalid argument value: " << argv[i] << ": " << argv[i+1] << endl;
+                exit(-1);
+            }
+        }
+    }
+    
+    // If not set by arguments, use default values
+    if (!w_set) {
+        IMAGE_TILE_SIZE.width = IMAGE_TILE_SIZE_COLS;
+    }
+    if (!h_set) {
+        IMAGE_TILE_SIZE.height = IMAGE_TILE_SIZE_ROWS;
+    }
+    if (!c_set) {
+        MAX_PATCH_LOC_X = PRE_MAX_PATCH_LOC_X;
+    }
+    if (!r_set) {
+        MAX_PATCH_LOC_Y = PRE_MAX_PATCH_LOC_Y;
+    }
+}
+
+void cleanUpHoughLineImage(string cityName, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
     
     time_t startTime = time(NULL);
     
     cout << "# Processing " << cityName << " ..." << endl;
     cout << "1. Detecting Hough Lines..." << endl;
-    vector<vector<Vec4i>> allPatchesOfLines = houghLineOnPatch(cityName);    // allLines.size() is the number of patches, allLine[i].size() is the number of lines in patch i
+    vector<vector<Vec4i>> allPatchesOfLines = houghLineOnPatch(cityName, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);    // allLines.size() is the number of patches, allLine[i].size() is the number of lines in patch i
     cout << "   - Finished in " << time(NULL) - startTime << " seconds." << endl;
     cout << "2. Extracting Points & Lines..." << endl;
     time_t currentTime = time(NULL);
@@ -394,7 +506,7 @@ void cleanUpHoughLineImage(string cityName) {
     
     // draw lines on image
     cout << "9. Saving Result..." << endl;
-    Mat outImg = Mat::zeros(IMAGE_TILE_SIZE_ROWS, IMAGE_TILE_SIZE_COLS, 0);
+    Mat outImg = Mat::zeros(IMAGE_TILE_SIZE.height, IMAGE_TILE_SIZE.width, 0);
     vector<vector<Point>> pointPairsToDraw;
     
     for (int i = 0; i < allRoadLines.size(); i++) {
@@ -420,15 +532,19 @@ float point2PointDistance(MyPoint p1, MyPoint p2) {
     return sqrt(distance);
 }
 
-vector<vector<Vec4i>> houghLineOnPatch(string cityName) {
+vector<vector<Vec4i>> houghLineOnPatch(string cityName, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
     string rootPath = BASE_PATH;
     string directory = rootPath + "my_model/result_on_patches/";   // model_name needs to be changed
     vector<vector<Vec4i>> allLines;
     for (int patch_position_x = 0; patch_position_x < MAX_PATCH_LOC_X; patch_position_x++) {
-        for (int patch_position_y = 0; patch_position_y < MAX_PATCH_LOC_y; patch_position_y++) {
+        for (int patch_position_y = 0; patch_position_y < MAX_PATCH_LOC_Y; patch_position_y++) {
             string fileName = to_string(patch_position_x) + "_" + to_string(patch_position_y) + ".png";
             //Mat rgbImg = imread(directory + cityName + "_" + fileName);
             Mat predImg = imread(directory + cityName + "_" + fileName, IMREAD_GRAYSCALE);
+            if (!predImg.data) {
+                cout << "Failed to load image patches, wrong input path!" << endl;
+                exit(-1);
+            }
             Mat dst;    //, dstHL = Mat::zeros(Size(200, 200), CV_32FC1);
             
             Canny(predImg, dst, 50, 200, 3);
@@ -458,16 +574,16 @@ vector<vector<Vec4i>> houghLineOnPatch(string cityName) {
             // cordination transfer from patch(200 x 200) to image(8192 x 8192)
             for (int i = 0; i < lines.size(); i++) {
                 if (patch_position_x == MAX_PATCH_LOC_X - 1) {
-                    lines[i][0] = lines[i][0] + (IMAGE_TILE_SIZE_ROWS - 1) - 200;   // (8192-1) -200
-                    lines[i][2] = lines[i][2] + (IMAGE_TILE_SIZE_ROWS - 1) - 200;
+                    lines[i][0] = lines[i][0] + (IMAGE_TILE_SIZE.height - 1) - 200;   // (8192-1) -200
+                    lines[i][2] = lines[i][2] + (IMAGE_TILE_SIZE.height - 1) - 200;
                 }
                 else {
                     lines[i][0] = lines[i][0] + patch_position_x * 100;    // step size 100 or 50
                     lines[i][2] = lines[i][2] + patch_position_x * 100;
                 }
-                if (patch_position_y == MAX_PATCH_LOC_y - 1) {
-                    lines[i][1] = lines[i][1] + (IMAGE_TILE_SIZE_COLS - 1) - 200;   // (8192-1) -200
-                    lines[i][3] = lines[i][3] + (IMAGE_TILE_SIZE_COLS - 1) - 200;
+                if (patch_position_y == MAX_PATCH_LOC_Y - 1) {
+                    lines[i][1] = lines[i][1] + (IMAGE_TILE_SIZE.width - 1) - 200;   // (8192-1) -200
+                    lines[i][3] = lines[i][3] + (IMAGE_TILE_SIZE.width - 1) - 200;
                 }
                 else {
                     lines[i][1] = lines[i][1] + patch_position_y * 100;
@@ -588,6 +704,10 @@ void drawDiffMapOnRGB(vector<string> cities){
     for (int i = 0; i < cities.size(); i++) {
         Mat diffImg = imread(rootPath + directory + "errorImg/" + cities[i] + ".png");
         Mat rgbImg = imread("../data/rgb_ng/" + cities[i] + ".png");
+        if (!rgbImg.data) {
+            cout << "Failed to load RGB imagery, wrong input path!" << endl;
+            exit(-1);
+        }
         for (int i = 0; i < diffImg.rows; i++) {
             for (int j = 0; j < diffImg.cols; j++) {
                 if (diffImg.at<Vec3b>(i, j) != Vec3b(0, 0, 0)) {
@@ -605,6 +725,10 @@ void generateAllPatches(vector<string> cities) {
         string path_in = "rgb_ng/";
         string path_out = "rgb_ng/patches_to_predict/";
         Mat img = imread("../data/" + path_in + cities[idx] + ".png");
+        if (!img.data) {
+            cout << "Failed to load RGB imagery, wrong input path!" << endl;
+            exit(-1);
+        }
         int patchSize = 200;
         int i_count = 0, j_count = 0;
         int overlapSize = 100;
@@ -653,7 +777,10 @@ void generateErrorImage(vector<string> cities) {
         string baseFolder = rootFolder + "my_model/post_processing_result/";    // change model_name
         Mat truthImg = imread("../data/y_ng/" + cities[idx] + ".png", IMREAD_GRAYSCALE);
         Mat predImg = imread(baseFolder + cities[idx] + ".png", IMREAD_GRAYSCALE);
-
+        if (!truthImg.data || !predImg.data) {
+            cout << "Failed to load images, wrong input path!" << endl;
+            exit(-1);
+        }
         Mat rc = Mat::zeros(truthImg.rows, truthImg.cols, 0);   // red channel
         Mat img;
         vector<Mat> imgCs;
@@ -707,6 +834,10 @@ void evaluateError(vector<string> cities) {
         cout << "       - " << cities[idx] << endl;
         
         Mat img = imread(baseFolder + cities[idx] + ".png");
+        if (!img.data) {
+            cout << "Failed to load RGB imagery, wrong input path!" << endl;
+            exit(-1);
+        }
         vector<Mat> rgbImg;
         split(img, rgbImg);
         
