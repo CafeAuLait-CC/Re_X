@@ -34,17 +34,17 @@
 using namespace std;
 using namespace cv;
 
-void startEval(vector<string> cities);
-void generateErrorImage(vector<string> cities);
-void evaluateError(vector<string> cities);
-bool searchAround(int rowIdx, int colIdx, Mat templateImg);
 
+/**********************************************************/
 void generateAllPatches(vector<string> cities, string INPUT_PATH, string OUTPUT_PATH);
+/**********************************************************/
 
+
+/******************** Post-processing *********************/
 void cleanUpHoughLineImage(string cityName, string MODEL_NAME, string INPUT_PATH, string OUTPUT_PATH, Size IMAGE_TILE_SIZE);
+vector<vector<Vec4i>> houghLineOnPatch(string cityName, string MODEL_NAME, string INPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y);
 float point2PointDistance(MyPoint p1, MyPoint p2);
 Point getIntersectionOfTwoLines(float k, float b, MyLine l);
-vector<vector<Vec4i>> houghLineOnPatch(string cityName, string MODEL_NAME, string INPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y);
 float point2LineDistance(Point p, Vec4i line);
 bool isParallelLine(Vec4i l1, Vec4i l2);
 
@@ -55,14 +55,24 @@ struct ID4DeletedPoint {
 
 MyPoint getMyPointWithId(int pointId, vector<MyPoint> allPointsVec, vector<ID4DeletedPoint> deletedIDVec);
 int getIndexOfMyPointWithId(int pointId, vector<MyPoint> allPointsVec, vector<ID4DeletedPoint> deletedIDVec);
+/**********************************************************/
 
+/********************** Evaluation ************************/
+void startEval(vector<string> cities, string MODEL_NAME, string INPUT_PATH, string OUTPUT_PATH);
+void generateErrorImage(vector<string> cities, string MODEL_NAME, string INPUT_PATH, string OUTPUT_PATH);
+void evaluateError(vector<string> cities, string MODEL_NAME, string OUTPUT_PATH);
+bool searchAround(int rowIdx, int colIdx, Mat templateImg);
+void drawDiffMapOnRGB(vector<string> cities, string MODEL_NAME, string OUTPUT_PATH);
+/**********************************************************/
+
+/************************ Helper **************************/
 void parseArgs(int argc, const char * argv[], int &mode, string &MODEL_NAME, string &INPUT_PATH, string &OUTPUT_PATH, Size &IMAGE_TILE_SIZE, int &MAX_PATCH_LOC_X, int &MAX_PATCH_LOC_Y);
 void createFolder(string folderPath);
+/**********************************************************/
 
 
 // TODO:
-// 1. Change to .tif file
-// 2. read image file name from file
+// 1. read image file name from file
 
 
 int main(int argc, const char * argv[]) {
@@ -104,14 +114,16 @@ int main(int argc, const char * argv[]) {
     
     switch (mode) {
         case 0:
-            generateAllPatches(cities, MODEL_NAME, INPUT_PATH, OUTPUT_PATH);   // Gerenate patches for testing
+            generateAllPatches(cities, INPUT_PATH, OUTPUT_PATH);   // Gerenate patches for testing
             break;
         case 1:
-            cleanUpHoughLineImage(cityName, MODEL_NAME, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE);  // Iterative Hough Transform on patches
+            for (int idx = 0; idx < cities.size(); idx++) {
+//                cleanUpHoughLineImage("cities[idx]", MODEL_NAME, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE);  // Iterative Hough Transform on patches
+            }
             break;
         default:
-//            startEval(cities);        // Evaluate results (IoU and F1 score)
-//            drawDiffMapOnRGB(cities);     // Draw TP, FP, FN on RGB image
+            startEval(cities, MODEL_NAME, INPUT_PATH, OUTPUT_PATH);        // Evaluate results (IoU and F1 score)
+            drawDiffMapOnRGB(cities, MODEL_NAME, OUTPUT_PATH);     // Draw TP, FP, FN on RGB image
             break;
     }
     
@@ -598,10 +610,10 @@ void cleanUpHoughLineImage(string cityName, string MODEL_NAME, string INPUT_PATH
     }
     if (OUTPUT_PATH.empty()) {
         createFolder("../results/" + MODEL_NAME + "/post_processing_result/");
-        imwrite("../results/" + MODEL_NAME + "/post_processing_result/" + cityName + ".png", outImg);
+        imwrite("../results/" + MODEL_NAME + "/post_processing_result/" + cityName + ".tif", outImg);
     } else {
         createFolder(OUTPUT_PATH);
-        imwrite(OUTPUT_PATH + cityName + ".png", outImg);
+        imwrite(OUTPUT_PATH + cityName + ".tif", outImg);
     }
     
     cout << "DONE!\nTime used: " << time(NULL) - startTime << " seconds." << endl;
@@ -618,11 +630,11 @@ vector<vector<Vec4i>> houghLineOnPatch(string cityName, string MODEL_NAME, strin
     vector<vector<Vec4i>> allLines;
     for (int patch_position_x = 0; patch_position_x < MAX_PATCH_LOC_X; patch_position_x++) {
         for (int patch_position_y = 0; patch_position_y < MAX_PATCH_LOC_Y; patch_position_y++) {
-            string fileName = to_string(patch_position_x) + "_" + to_string(patch_position_y) + ".png";
+            string fileName = to_string(patch_position_x) + "_" + to_string(patch_position_y) + ".tif";
             //Mat rgbImg = imread(directory + cityName + "_" + fileName);
             Mat predImg = imread(directory + cityName + "_" + fileName, IMREAD_GRAYSCALE);
             if (!INPUT_PATH.empty()) {
-                Mat predImg = imread(INPUT_PATH + cityName + "_" + fileName, IMREAD_GRAYSCALE);
+                predImg = imread(INPUT_PATH + cityName + "_" + fileName, IMREAD_GRAYSCALE);
             }
             if (!predImg.data) {
                 cout << "Failed to load image patches, wrong input path!" << endl;
@@ -781,14 +793,17 @@ Point getIntersectionOfTwoLines(float k, float b, MyLine l) {
     return Point(x, y);
 }
 
-void drawDiffMapOnRGB(vector<string> cities){
+void drawDiffMapOnRGB(vector<string> cities, string MODEL_NAME, string OUTPUT_PATH){
     string rootPath = BASE_PATH;
-    string directory = "my_model/post_processing_result/";  // change model_name
+    string directory = MODEL_NAME + "/post_processing_result/";  // change model_name
     for (int i = 0; i < cities.size(); i++) {
-        Mat diffImg = imread(rootPath + directory + "errorImg/" + cities[i] + ".png");
-        Mat rgbImg = imread("../data/rgb_ng/" + cities[i] + ".png");
-        if (!rgbImg.data) {
-            cout << "Failed to load RGB imagery, wrong input path!" << endl;
+        Mat diffImg = imread(rootPath + directory + "errorImg/" + cities[i] + ".tif");
+        if (OUTPUT_PATH.empty()) {
+            diffImg = imread(OUTPUT_PATH + cities[i] + ".tif");
+        }
+        Mat rgbImg = imread("../data/rgb_ng/" + cities[i] + ".tif");
+        if (!diffImg.data) {
+            cout << "Failed to load difference images, wrong intermediate path!" << endl;
             exit(-1);
         }
         for (int i = 0; i < diffImg.rows; i++) {
@@ -799,7 +814,11 @@ void drawDiffMapOnRGB(vector<string> cities){
             }
         }
         
-        imwrite(rootPath + directory + "errorImg/" + cities[i] + "_rgb.png", rgbImg);
+        if (OUTPUT_PATH.empty()) {
+            imwrite(rootPath + directory + "errorImg/" + cities[i] + "_rgb.tif", rgbImg);
+        } else {
+            imwrite(OUTPUT_PATH + cities[i] + "_rgb.tif", rgbImg);
+        }
     }
 }
 
@@ -807,9 +826,9 @@ void generateAllPatches(vector<string> cities, string INPUT_PATH, string OUTPUT_
     for (int idx = 0; idx < cities.size(); idx++) {
         string path_in = "rgb_ng/";
         string path_out = "rgb_ng/patches_to_predict/";
-        Mat img = imread("../data/" + path_in + cities[idx] + ".png");
+        Mat img = imread("../data/" + path_in + cities[idx] + ".tif");
         if (!INPUT_PATH.empty()) {
-            Mat img = imread(INPUT_PATH + cities[idx] + ".png");
+            img = imread(INPUT_PATH + cities[idx] + ".tif");
         }
         if (!img.data) {
             cout << "Failed to load RGB imagery, wrong input path!" << endl;
@@ -834,10 +853,10 @@ void generateAllPatches(vector<string> cities, string INPUT_PATH, string OUTPUT_
                 Mat patchImg(img, Rect(i, j, patchSize, patchSize));
                 if (OUTPUT_PATH.empty()) {
                     createFolder("../data/" + path_out);
-                    imwrite("../data/" + path_out + cities[idx] + "_" + to_string(i_count) + "_" + to_string(j_count) + ".png", patchImg);
+                    imwrite("../data/" + path_out + cities[idx] + "_" + to_string(i_count) + "_" + to_string(j_count) + ".tif", patchImg);
                 } else {
                     createFolder(OUTPUT_PATH);
-                    imwrite(OUTPUT_PATH + cities[idx] + "_" + to_string(i_count) + "_" + to_string(j_count) + ".png", patchImg);
+                    imwrite(OUTPUT_PATH + cities[idx] + "_" + to_string(i_count) + "_" + to_string(j_count) + ".tif", patchImg);
                 }
                 j_count++;
                 if (lastTripJ) {
@@ -854,21 +873,24 @@ void generateAllPatches(vector<string> cities, string INPUT_PATH, string OUTPUT_
     }
 }
 
-void startEval(vector<string> cities) {
+void startEval(vector<string> cities, string MODEL_NAME, string INPUT_PATH, string OUTPUT_PATH) {
     cout << "   - Generating difference map..." << endl;
-    generateErrorImage(cities);
+    generateErrorImage(cities, MODEL_NAME, INPUT_PATH, OUTPUT_PATH);
     cout << "   - Evaluating..." << endl;
-    evaluateError(cities);
+    evaluateError(cities, MODEL_NAME, OUTPUT_PATH);
 }
 
-void generateErrorImage(vector<string> cities) {
+void generateErrorImage(vector<string> cities, string MODEL_NAME, string INPUT_PATH, string OUTPUT_PATH) {
     // Load truthImg, predImg
     for (int idx = 0; idx < cities.size(); idx++) {
         cout << "       - " << cities[idx] << endl;
         string rootFolder = BASE_PATH;
-        string baseFolder = rootFolder + "my_model/post_processing_result/";    // change model_name
-        Mat truthImg = imread("../data/y_ng/" + cities[idx] + ".png", IMREAD_GRAYSCALE);
-        Mat predImg = imread(baseFolder + cities[idx] + ".png", IMREAD_GRAYSCALE);
+        string baseFolder = rootFolder + MODEL_NAME + "/post_processing_result/";    // change model_name
+        Mat truthImg = imread("../data/y_ng/" + cities[idx] + ".tif", IMREAD_GRAYSCALE);
+        Mat predImg = imread(baseFolder + cities[idx] + ".tif", IMREAD_GRAYSCALE);
+        if (!INPUT_PATH.empty()) {
+            predImg = imread(INPUT_PATH + cities[idx] + ".tif", IMREAD_GRAYSCALE);
+        }
         if (!truthImg.data || !predImg.data) {
             cout << "Failed to load images, wrong input path!" << endl;
             exit(-1);
@@ -907,16 +929,23 @@ void generateErrorImage(vector<string> cities) {
                 }
             }
         }
-        imwrite(baseFolder + "errorImg/" + cities[idx] + ".png", img);
-
+        
+        if (OUTPUT_PATH.empty()) {
+            imwrite(baseFolder + "errorImg/" + cities[idx] + ".tif", img);
+        } else {
+            imwrite(OUTPUT_PATH + cities[idx] + ".tif", img);
+        }
     }
     
 }
 
-void evaluateError(vector<string> cities) {
+void evaluateError(vector<string> cities, string MODEL_NAME, string OUTPUT_PATH) {
     
     string rootFolder = BASE_PATH;
-    string baseFolder = rootFolder + "my_model/post_processing_result/errorImg/";   // change model_name
+    string baseFolder = rootFolder + MODEL_NAME + "/post_processing_result/errorImg/";   // change model_name
+    if (!OUTPUT_PATH.empty()) {
+        baseFolder = OUTPUT_PATH;
+    }
     ofstream out_file(baseFolder + "eval.txt");
     
     out_file << "City Names\tPrecision\tRecall\tF1\tIoU\n";
@@ -925,9 +954,9 @@ void evaluateError(vector<string> cities) {
         
         cout << "       - " << cities[idx] << endl;
         
-        Mat img = imread(baseFolder + cities[idx] + ".png");
+        Mat img = imread(baseFolder + cities[idx] + ".tif");
         if (!img.data) {
-            cout << "Failed to load RGB imagery, wrong input path!" << endl;
+            cout << "Failed to load difference image, wrong input path!" << endl;
             exit(-1);
         }
         vector<Mat> rgbImg;
