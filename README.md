@@ -2,6 +2,10 @@
 Delineation of Road Networks Using Deep Residual Neural Networks and Iterative Hough Transform
 
 ## Usage
+### Main Dependencies
+Keras + TensorFlow  
+OpenCV for C++ & Python3 
+CMake & make
 
 ### Dataset preparation
 1. Create a folder `data/` under this project directory
@@ -10,31 +14,64 @@ Delineation of Road Networks Using Deep Residual Neural Networks and Iterative H
 ### Train the model
 1. Go to `training & testing` folder and run `python3 mean.py -i ../data/rgb/`
 2. Run `python3 train.py -n TRAINING_NAME`, the trained model will be saved in `results/TRAINING_NAME/model.hdf5`
-```
+
+	```
 $ cd training\ \&\ testing/
-$ python3 mean.py -i ../data/rgb/
-$ python3 train.py -n TRAINING_NAME
+$ python mean.py -i ../data/rgb/
+$ python train.py -n TRAINING_NAME
 ```
 
 ### Inference
-1. Create folder `data/rgb_ng/patches_to_predict/`
-2. Go to `post-processing & evaluation` folder, in `main.cpp` file run the `generateAllPatches()` function to get all patches for inference. After this, you will get a bunch of 200x200 image patches saved in `data/rgb_ng/patches_to_predict/`, the file names of these images represent their location in the original image tile.
-3. Go to `training & testing` folder and run `python3 patch_test.py -n TRAINING_NAME` to inference the road map using the `TRAINING_NAME` model, segmentation result will be saved in `results/TRAINING_NAME/result_on_patches/`
+1. Go to `post-processing & evaluation` folder, compile and run the `main.cpp` file to get all patches for inference. 
+
+	```
+	$ cd Re_X/post-processing\ \&\ evaluation/
+	$ mkdir build && cd build
+	$ cmake ..
+	$ make && cd ..
+	$ ./Re_X 0 TRAINING_NAME
 ```
-$ cd Re_X/
-$ mkdir data/rgb_ng/patches_to_predict/
-```
-After running the C++ program:
-```
+After this, you will get a bunch of 200x200 image patches saved in `Re_X/data/rgb_ng/patches_to_predict/`, the file names of these images represent their location in the original image tile.
+2. Go to `training & testing` folder and run the test program to inference the road map using the `TRAINING_NAME` model, segmentation result will be saved in `Re_X/results/TRAINING_NAME/result_on_patches/`
+
+	```
 $ cd training\ \&\ testing/
-$ python3 patch_test.py -n TRAINING_NAME
+$ python patch_test.py -n TRAINING_NAME
 ```
 
 ### Post-processing
-1. Create folder `results/TRAINING_NAME/post_processing_result/`
-2. Go to `post-processing & evaluation` folder, in `main.cpp` file run the `cleanUpHoughLineImage()` function to get vectorized result images (final results). Output images will be saved in the folder `post_processing_result/`.
+1. Go to `post-processing & evaluation` folder,  run the `./Re_X` program in post-processing mode to get vectorized result images (final results). Output images will be saved in the folder `Re_X/results/TRAINING_NAMEpost_processing_result/`.
+
+	```
+	$ cd Re_X/post-processing\ \&\ evaluation/
+	$ ./Re_X 1 TRAINING_NAME
+	```
 
 ### Evaluation
-1. Create folders `results/TRAINING_NAME/post_processing_result/errorImg/`
-2. Go to `post-processing & evaluation` folder, in `main.cpp` file run the `startEval()` function, a evaluation table called `eval.txt` will be saved in `errorImg` folder
-3. In `main.cpp` file run the `drawDiffMapOnRGB()` function, the difference image will be drew on the rgb imagery and saved in the `errorImg` folder
+1. Go to `post-processing & evaluation` folder, run the `./Re_X` program in evaluation mode, a evaluation table called `eval.txt` will be saved in `Re_X/results/TRAINING_NAME/post_processing_result/errorImg/`, and the difference image will be drew on the rgb imagery and saved in the same folder
+
+	```
+	$ cd Re_X/post-processing\ \&\ evaluation/
+	$ ./Re_X 2 TRAINING_NAME
+	```
+	
+### Help
+
+```
+$ ./Re_X 
+
+Usage: ./Re_X mode -n model_name [...opts]
+
+    mode:  	0: generateAllPatches()				# prepare the inference data
+	   		1: cleanUpHoughLineImage()			# post-processing & refinement
+	   		2: startEval() & drawDiffMapOnRGB()	# evaluation
+
+    -n:  the folder name used to save the trained model.
+
+    opts:  -w --image_width		(default 8192)
+	   -h --image_height		(default 8192)
+	   -c --patch_cols			(default 81 -- file name from 0 to 80)
+	   -r --patch_rows			(default 81 -- file name from 0 to 80)
+	   -i --input_folder		(leave empty to use default setting)
+	   -o --output_folder		(leave empty to use default setting)
+```
