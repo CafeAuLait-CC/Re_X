@@ -39,12 +39,12 @@ void generateErrorImage(vector<string> cities);
 void evaluateError(vector<string> cities);
 bool searchAround(int rowIdx, int colIdx, Mat templateImg);
 
-void generateAllPatches(vector<string> cities);
+void generateAllPatches(vector<string> cities, string INPUT_PATH, string OUTPUT_PATH);
 
-void cleanUpHoughLineImage(string cityName, Size IMAGE_TILE_SIZE);
+void cleanUpHoughLineImage(string cityName, string INPUT_PATH, string OUTPUT_PATH, Size IMAGE_TILE_SIZE);
 float point2PointDistance(MyPoint p1, MyPoint p2);
 Point getIntersectionOfTwoLines(float k, float b, MyLine l);
-vector<vector<Vec4i>> houghLineOnPatch(string cityName, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y);
+vector<vector<Vec4i>> houghLineOnPatch(string cityName, string INPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y);
 float point2LineDistance(Point p, Vec4i line);
 bool isParallelLine(Vec4i l1, Vec4i l2);
 
@@ -56,28 +56,27 @@ struct ID4DeletedPoint {
 MyPoint getMyPointWithId(int pointId, vector<MyPoint> allPointsVec, vector<ID4DeletedPoint> deletedIDVec);
 int getIndexOfMyPointWithId(int pointId, vector<MyPoint> allPointsVec, vector<ID4DeletedPoint> deletedIDVec);
 
-void parseArgs(int argc, const char * argv[], int &mode, string &INPUT_PATH, string &OUTPUT_PATH, Size &IMAGE_TILE_SIZE, int &MAX_PATCH_LOC_X, int &MAX_PATCH_LOC_Y);
+void parseArgs(int argc, const char * argv[], int &mode, string &MODEL_NAME, string &INPUT_PATH, string &OUTPUT_PATH, Size &IMAGE_TILE_SIZE, int &MAX_PATCH_LOC_X, int &MAX_PATCH_LOC_Y);
 void createFolder(string folderPath);
 
 int main(int argc, const char * argv[]) {
 
     int mode;
+    string MODEL_NAME;
     string INPUT_PATH;
     string OUTPUT_PATH;
     Size IMAGE_TILE_SIZE;
     int MAX_PATCH_LOC_X;
     int MAX_PATCH_LOC_Y;
-    parseArgs(argc, argv, mode, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);
-    
-    createFolder("./new");
-    
+    parseArgs(argc, argv, mode, MODEL_NAME, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);
 
-//    cout << mode << endl;
-//    cout << INPUT_PATH << endl;
-//    cout << OUTPUT_PATH << endl;
-//    cout << IMAGE_TILE_SIZE << endl;
-//    cout << MAX_PATCH_LOC_X << endl;
-//    cout << MAX_PATCH_LOC_Y << endl;
+    cout << mode << endl;
+    cout << MODEL_NAME << endl;
+    cout << INPUT_PATH << endl;
+    cout << OUTPUT_PATH << endl;
+    cout << IMAGE_TILE_SIZE << endl;
+    cout << MAX_PATCH_LOC_X << endl;
+    cout << MAX_PATCH_LOC_Y << endl;
     
     vector<string> cities;
     cities.push_back("amsterdam");
@@ -96,7 +95,7 @@ int main(int argc, const char * argv[]) {
     cities.push_back("toronto");
     cities.push_back("vancouver");
     
-//    generateAllPatches(cities);   // Gerenate patches for testing
+//    generateAllPatches(cities, INPUT_PATH, OUTPUT_PATH);   // Gerenate patches for testing
 
 //    cleanUpHoughLineImage();  // Iterative Hough Transform on patches
         
@@ -108,11 +107,12 @@ int main(int argc, const char * argv[]) {
     
 }
 
-void parseArgs(int argc, const char * argv[], int &mode, string &INPUT_PATH, string &OUTPUT_PATH, Size &IMAGE_TILE_SIZE, int &MAX_PATCH_LOC_X, int &MAX_PATCH_LOC_Y) {
+void parseArgs(int argc, const char * argv[], int &mode, string &MODEL_NAME, string &INPUT_PATH, string &OUTPUT_PATH, Size &IMAGE_TILE_SIZE, int &MAX_PATCH_LOC_X, int &MAX_PATCH_LOC_Y) {
     if (argc < 4) {
-        cout << "\nUsage: ./Re_X mode input_path output_path [...opts]" << endl;
+        cout << "\nUsage: ./Re_X mode -n model_name [...opts]" << endl;
         cout << "\n    mode:  0: generateAllPatches()\n\t   1: cleanUpHoughLineImage()\n\t   2: startEval() & drawDiffMapOnRGB()" << endl;
-        cout << "\n    opts:  -w --image_width\t(default 8192)\n\t   -h --image_height\t(default 8192)\n\t   -c --patch_cols\t\t(default 81 -- file name from 0 to 80)\n\t   -r --patch_rows\t\t(default 81 -- file name from 0 to 80)" << endl;
+        cout << "\n    -n:  the folder name used to save the trained model." << endl;
+        cout << "\n    opts:  -w --image_width\t\t(default 8192)\n\t   -h --image_height\t\t(default 8192)\n\t   -c --patch_cols\t\t(default 81 -- file name from 0 to 80)\n\t   -r --patch_rows\t\t(default 81 -- file name from 0 to 80)\n\t   -i --input_folder\t\t(leave empty to use default setting)\n\t   -o --output_folder\t\t(leave empty to use default setting)" << endl;
         exit(-1);
     }
     
@@ -127,25 +127,38 @@ void parseArgs(int argc, const char * argv[], int &mode, string &INPUT_PATH, str
         exit(-1);
     }
     
-    // Get input & output path
-    INPUT_PATH = argv[2];
-    OUTPUT_PATH = argv[3];
-    if (access(argv[2], 0) == -1 || access(argv[3], 0) == -1) {  // test if it's correct or not
-        cout << "The entered directory(s) doesn't exist!" << endl;
-        exit(-1);
-    }
-    
+    bool n_set = false;
     bool w_set = false;
     bool h_set = false;
     bool c_set = false;
     bool r_set = false;
     
-    if (argc > 4) {
-        if (argc % 2 != 0) {
-            cout << "Wrong argument number!" << endl;
-            exit(-1);
-        }
-        for (int i = 4; i < argc; i += 2) {
+    if (argc % 2 != 0) {
+        cout << "Wrong argument number!" << endl;
+        exit(-1);
+    }
+    for (int i = 2; i < argc; i += 2) {
+        if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--input_folder")) {
+            INPUT_PATH = argv[i+1];
+            if (access(argv[i+1], 0) == -1) {  // test if it's correct or not
+                cout << argv[i] << endl;
+                cout << "The input directory doesn't exist!" << endl;
+                exit(-1);
+            }
+            if (INPUT_PATH[INPUT_PATH.size()-1] != '/') {   // append '/' to the end
+                INPUT_PATH = INPUT_PATH + '/';
+            }
+        } else if (!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output_folder")) {
+            OUTPUT_PATH = argv[i+1];
+            if (OUTPUT_PATH[OUTPUT_PATH.size()-1] != '/') {
+                OUTPUT_PATH = OUTPUT_PATH + '/';
+            }
+        } else if (!strcmp(argv[i], "-n")) {
+            MODEL_NAME = argv[i+1];
+            if (access(("../results/" + MODEL_NAME).c_str(), 0) == 0) {
+                n_set = true;
+            }
+        } else {
             char arg;
             if (strlen(argv[i]) == 2) {
                 arg = argv[i][1];
@@ -188,6 +201,10 @@ void parseArgs(int argc, const char * argv[], int &mode, string &INPUT_PATH, str
         }
     }
     
+    if (!n_set) {
+        cout << "Model name is incorrect: " << MODEL_NAME << endl;
+        exit(-1);
+    }
     // If not set by arguments, use default values
     if (!w_set) {
         IMAGE_TILE_SIZE.width = IMAGE_TILE_SIZE_COLS;
@@ -207,29 +224,32 @@ void createFolder(string folderPath) {
 #ifdef __APPLE__
     if (mkdir(folderPath.c_str(), 0744) == -1) {
         cout << "Failed to create folder: " << folderPath << endl;
+        exit(-1);
     }
 #endif
     
 #ifdef linux
     if (mkdir(folderPath.c_str(), 0744) == -1) {
         cout << "Failed to create folder: " << folderPath << endl;
+        exit(-1);
     }
 #endif
     
 #ifdef _WIN32
     if (mkdir(const char *_Path) == -1) {
         cout << "Failed to create folder: " << folderPath << endl;
+        exit(-1);
     }
 #endif
 }
 
-void cleanUpHoughLineImage(string cityName, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
+void cleanUpHoughLineImage(string cityName, string INPUT_PATH, string OUTPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
     
     time_t startTime = time(NULL);
     
     cout << "# Processing " << cityName << " ..." << endl;
     cout << "1. Detecting Hough Lines..." << endl;
-    vector<vector<Vec4i>> allPatchesOfLines = houghLineOnPatch(cityName, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);    // allLines.size() is the number of patches, allLine[i].size() is the number of lines in patch i
+    vector<vector<Vec4i>> allPatchesOfLines = houghLineOnPatch(cityName, INPUT_PATH, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);    // allLines.size() is the number of patches, allLine[i].size() is the number of lines in patch i
     cout << "   - Finished in " << time(NULL) - startTime << " seconds." << endl;
     cout << "2. Extracting Points & Lines..." << endl;
     time_t currentTime = time(NULL);
@@ -573,7 +593,7 @@ float point2PointDistance(MyPoint p1, MyPoint p2) {
     return sqrt(distance);
 }
 
-vector<vector<Vec4i>> houghLineOnPatch(string cityName, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
+vector<vector<Vec4i>> houghLineOnPatch(string cityName, string INPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
     string rootPath = BASE_PATH;
     string directory = rootPath + "my_model/result_on_patches/";   // model_name needs to be changed
     vector<vector<Vec4i>> allLines;
@@ -761,11 +781,14 @@ void drawDiffMapOnRGB(vector<string> cities){
     }
 }
 
-void generateAllPatches(vector<string> cities, string INPUT_PATH) {
+void generateAllPatches(vector<string> cities, string INPUT_PATH, string OUTPUT_PATH) {
     for (int idx = 0; idx < cities.size(); idx++) {
         string path_in = "rgb_ng/";
         string path_out = "rgb_ng/patches_to_predict/";
         Mat img = imread("../data/" + path_in + cities[idx] + ".png");
+        if (!INPUT_PATH.empty()) {
+            Mat img = imread(INPUT_PATH + cities[idx] + ".png");
+        }
         if (!img.data) {
             cout << "Failed to load RGB imagery, wrong input path!" << endl;
             exit(-1);
@@ -787,7 +810,13 @@ void generateAllPatches(vector<string> cities, string INPUT_PATH) {
                     lastTripJ = true;
                 }
                 Mat patchImg(img, Rect(i, j, patchSize, patchSize));
-                imwrite("../data/" + path_out + cities[idx] + "_" + to_string(i_count) + "_" + to_string(j_count) + ".png", patchImg);
+                if (OUTPUT_PATH.empty()) {
+                    createFolder("../data/" + path_out);
+                    imwrite("../data/" + path_out + cities[idx] + "_" + to_string(i_count) + "_" + to_string(j_count) + ".png", patchImg);
+                } else {
+                    createFolder(OUTPUT_PATH);
+                    imwrite(OUTPUT_PATH + cities[idx] + "_" + to_string(i_count) + "_" + to_string(j_count) + ".png", patchImg);
+                }
                 j_count++;
                 if (lastTripJ) {
                     break;
