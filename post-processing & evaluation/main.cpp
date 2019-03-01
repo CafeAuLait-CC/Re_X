@@ -41,7 +41,7 @@ void generateAllPatches(vector<string> cities, string INPUT_PATH, string OUTPUT_
 
 
 /******************** Post-processing *********************/
-void cleanUpHoughLineImage(string cityName, string MODEL_NAME, string INPUT_PATH, string OUTPUT_PATH, Size IMAGE_TILE_SIZE);
+void cleanUpHoughLineImage(string cityName, string MODEL_NAME, string INPUT_PATH, string OUTPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y);
 vector<vector<Vec4i>> houghLineOnPatch(string cityName, string MODEL_NAME, string INPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y);
 float point2PointDistance(MyPoint p1, MyPoint p2);
 Point getIntersectionOfTwoLines(float k, float b, MyLine l);
@@ -118,7 +118,7 @@ int main(int argc, const char * argv[]) {
             break;
         case 1:
             for (int idx = 0; idx < cities.size(); idx++) {
-//                cleanUpHoughLineImage("cities[idx]", MODEL_NAME, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE);  // Iterative Hough Transform on patches
+                cleanUpHoughLineImage(cities[idx], MODEL_NAME, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);  // Iterative Hough Transform on patches
             }
             break;
         default:
@@ -626,7 +626,7 @@ float point2PointDistance(MyPoint p1, MyPoint p2) {
 
 vector<vector<Vec4i>> houghLineOnPatch(string cityName, string MODEL_NAME, string INPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
     string rootPath = BASE_PATH;
-    string directory = rootPath + MODEL_NAME + "/result_on_patches/";   // model_name needs to be changed
+    string directory = rootPath + MODEL_NAME + "/result_on_patches/";
     vector<vector<Vec4i>> allLines;
     for (int patch_position_x = 0; patch_position_x < MAX_PATCH_LOC_X; patch_position_x++) {
         for (int patch_position_y = 0; patch_position_y < MAX_PATCH_LOC_Y; patch_position_y++) {
@@ -795,7 +795,7 @@ Point getIntersectionOfTwoLines(float k, float b, MyLine l) {
 
 void drawDiffMapOnRGB(vector<string> cities, string MODEL_NAME, string OUTPUT_PATH){
     string rootPath = BASE_PATH;
-    string directory = MODEL_NAME + "/post_processing_result/";  // change model_name
+    string directory = MODEL_NAME + "/post_processing_result/";
     for (int i = 0; i < cities.size(); i++) {
         Mat diffImg = imread(rootPath + directory + "errorImg/" + cities[i] + ".tif");
         if (OUTPUT_PATH.empty()) {
@@ -885,7 +885,7 @@ void generateErrorImage(vector<string> cities, string MODEL_NAME, string INPUT_P
     for (int idx = 0; idx < cities.size(); idx++) {
         cout << "       - " << cities[idx] << endl;
         string rootFolder = BASE_PATH;
-        string baseFolder = rootFolder + MODEL_NAME + "/post_processing_result/";    // change model_name
+        string baseFolder = rootFolder + MODEL_NAME + "/post_processing_result/";
         Mat truthImg = imread("../data/y_ng/" + cities[idx] + ".tif", IMREAD_GRAYSCALE);
         Mat predImg = imread(baseFolder + cities[idx] + ".tif", IMREAD_GRAYSCALE);
         if (!INPUT_PATH.empty()) {
@@ -942,7 +942,7 @@ void generateErrorImage(vector<string> cities, string MODEL_NAME, string INPUT_P
 void evaluateError(vector<string> cities, string MODEL_NAME, string OUTPUT_PATH) {
     
     string rootFolder = BASE_PATH;
-    string baseFolder = rootFolder + MODEL_NAME + "/post_processing_result/errorImg/";   // change model_name
+    string baseFolder = rootFolder + MODEL_NAME + "/post_processing_result/errorImg/";
     if (!OUTPUT_PATH.empty()) {
         baseFolder = OUTPUT_PATH;
     }
