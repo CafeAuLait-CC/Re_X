@@ -4,8 +4,8 @@ Delineation of Road Networks Using Deep Residual Neural Networks and Iterative H
 ## Usage
 ### Main Dependencies
 Keras + TensorFlow  
-OpenCV for C++ & Python3 
-CMake & make
+OpenCV for C++ & Python3  
+CMake & make  
 
 ### Dataset preparation
 1. Create a folder `data/` under this project directory
