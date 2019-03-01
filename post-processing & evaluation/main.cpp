@@ -2,6 +2,23 @@
 #include <fstream>
 #include <time.h>
 
+#ifdef __APPLE__
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
+#ifdef linux
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
+#ifdef _WIN32
+#include <io.h>
+#include <direct.h>
+#endif
+
 #include <opencv2/opencv.hpp>
 #include "MyLine.h"
 
@@ -40,6 +57,7 @@ MyPoint getMyPointWithId(int pointId, vector<MyPoint> allPointsVec, vector<ID4De
 int getIndexOfMyPointWithId(int pointId, vector<MyPoint> allPointsVec, vector<ID4DeletedPoint> deletedIDVec);
 
 void parseArgs(int argc, const char * argv[], int &mode, string &INPUT_PATH, string &OUTPUT_PATH, Size &IMAGE_TILE_SIZE, int &MAX_PATCH_LOC_X, int &MAX_PATCH_LOC_Y);
+void createFolder(string folderPath);
 
 int main(int argc, const char * argv[]) {
 
@@ -50,13 +68,16 @@ int main(int argc, const char * argv[]) {
     int MAX_PATCH_LOC_X;
     int MAX_PATCH_LOC_Y;
     parseArgs(argc, argv, mode, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);
+    
+    createFolder("./new");
+    
 
-    cout << mode << endl;
-    cout << INPUT_PATH << endl;
-    cout << OUTPUT_PATH << endl;
-    cout << IMAGE_TILE_SIZE << endl;
-    cout << MAX_PATCH_LOC_X << endl;
-    cout << MAX_PATCH_LOC_Y << endl;
+//    cout << mode << endl;
+//    cout << INPUT_PATH << endl;
+//    cout << OUTPUT_PATH << endl;
+//    cout << IMAGE_TILE_SIZE << endl;
+//    cout << MAX_PATCH_LOC_X << endl;
+//    cout << MAX_PATCH_LOC_Y << endl;
     
     vector<string> cities;
     cities.push_back("amsterdam");
@@ -109,10 +130,10 @@ void parseArgs(int argc, const char * argv[], int &mode, string &INPUT_PATH, str
     // Get input & output path
     INPUT_PATH = argv[2];
     OUTPUT_PATH = argv[3];
-//    if (INPUT_PATH.empty() || OUTPUT_PATH.empty()) {  // try to test if it's correct or not
-//        cout << "Wrong image path" << endl;
-//        wrongArgFlag = true;
-//    }
+    if (access(argv[2], 0) == -1 || access(argv[3], 0) == -1) {  // test if it's correct or not
+        cout << "The entered directory(s) doesn't exist!" << endl;
+        exit(-1);
+    }
     
     bool w_set = false;
     bool h_set = false;
@@ -180,6 +201,26 @@ void parseArgs(int argc, const char * argv[], int &mode, string &INPUT_PATH, str
     if (!r_set) {
         MAX_PATCH_LOC_Y = PRE_MAX_PATCH_LOC_Y;
     }
+}
+
+void createFolder(string folderPath) {
+#ifdef __APPLE__
+    if (mkdir(folderPath.c_str(), 0744) == -1) {
+        cout << "Failed to create folder: " << folderPath << endl;
+    }
+#endif
+    
+#ifdef linux
+    if (mkdir(folderPath.c_str(), 0744) == -1) {
+        cout << "Failed to create folder: " << folderPath << endl;
+    }
+#endif
+    
+#ifdef _WIN32
+    if (mkdir(const char *_Path) == -1) {
+        cout << "Failed to create folder: " << folderPath << endl;
+    }
+#endif
 }
 
 void cleanUpHoughLineImage(string cityName, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
@@ -720,7 +761,7 @@ void drawDiffMapOnRGB(vector<string> cities){
     }
 }
 
-void generateAllPatches(vector<string> cities) {
+void generateAllPatches(vector<string> cities, string INPUT_PATH) {
     for (int idx = 0; idx < cities.size(); idx++) {
         string path_in = "rgb_ng/";
         string path_out = "rgb_ng/patches_to_predict/";
