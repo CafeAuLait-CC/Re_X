@@ -41,10 +41,10 @@ bool searchAround(int rowIdx, int colIdx, Mat templateImg);
 
 void generateAllPatches(vector<string> cities, string INPUT_PATH, string OUTPUT_PATH);
 
-void cleanUpHoughLineImage(string cityName, string INPUT_PATH, string OUTPUT_PATH, Size IMAGE_TILE_SIZE);
+void cleanUpHoughLineImage(string cityName, string MODEL_NAME, string INPUT_PATH, string OUTPUT_PATH, Size IMAGE_TILE_SIZE);
 float point2PointDistance(MyPoint p1, MyPoint p2);
 Point getIntersectionOfTwoLines(float k, float b, MyLine l);
-vector<vector<Vec4i>> houghLineOnPatch(string cityName, string INPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y);
+vector<vector<Vec4i>> houghLineOnPatch(string cityName, string MODEL_NAME, string INPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y);
 float point2LineDistance(Point p, Vec4i line);
 bool isParallelLine(Vec4i l1, Vec4i l2);
 
@@ -59,6 +59,12 @@ int getIndexOfMyPointWithId(int pointId, vector<MyPoint> allPointsVec, vector<ID
 void parseArgs(int argc, const char * argv[], int &mode, string &MODEL_NAME, string &INPUT_PATH, string &OUTPUT_PATH, Size &IMAGE_TILE_SIZE, int &MAX_PATCH_LOC_X, int &MAX_PATCH_LOC_Y);
 void createFolder(string folderPath);
 
+
+// TODO:
+// 1. Change to .tif file
+// 2. read image file name from file
+
+
 int main(int argc, const char * argv[]) {
 
     int mode;
@@ -70,13 +76,13 @@ int main(int argc, const char * argv[]) {
     int MAX_PATCH_LOC_Y;
     parseArgs(argc, argv, mode, MODEL_NAME, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);
 
-    cout << mode << endl;
-    cout << MODEL_NAME << endl;
-    cout << INPUT_PATH << endl;
-    cout << OUTPUT_PATH << endl;
-    cout << IMAGE_TILE_SIZE << endl;
-    cout << MAX_PATCH_LOC_X << endl;
-    cout << MAX_PATCH_LOC_Y << endl;
+//    cout << mode << endl;
+//    cout << MODEL_NAME << endl;
+//    cout << INPUT_PATH << endl;
+//    cout << OUTPUT_PATH << endl;
+//    cout << IMAGE_TILE_SIZE << endl;
+//    cout << MAX_PATCH_LOC_X << endl;
+//    cout << MAX_PATCH_LOC_Y << endl;
     
     vector<string> cities;
     cities.push_back("amsterdam");
@@ -95,13 +101,18 @@ int main(int argc, const char * argv[]) {
     cities.push_back("toronto");
     cities.push_back("vancouver");
     
-//    generateAllPatches(cities, INPUT_PATH, OUTPUT_PATH);   // Gerenate patches for testing
-
-//    cleanUpHoughLineImage();  // Iterative Hough Transform on patches
-        
-//    startEval(cities);        // Evaluate results (IoU and F1 score)
-    
-//    drawDiffMapOnRGB(cities);     // Draw TP, FP, FN on RGB image
+    switch (mode) {
+        case 0:
+//            generateAllPatches(cities, MODEL_NAME, INPUT_PATH, OUTPUT_PATH);   // Gerenate patches for testing
+            break;
+        case 1:
+//            cleanUpHoughLineImage(cityName, MODEL_NAME, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE);  // Iterative Hough Transform on patches
+            break;
+        default:
+//            startEval(cities);        // Evaluate results (IoU and F1 score)
+//            drawDiffMapOnRGB(cities);     // Draw TP, FP, FN on RGB image
+            break;
+    }
     
     return 0;
     
@@ -243,13 +254,13 @@ void createFolder(string folderPath) {
 #endif
 }
 
-void cleanUpHoughLineImage(string cityName, string INPUT_PATH, string OUTPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
+void cleanUpHoughLineImage(string cityName, string MODEL_NAME, string INPUT_PATH, string OUTPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
     
     time_t startTime = time(NULL);
     
     cout << "# Processing " << cityName << " ..." << endl;
     cout << "1. Detecting Hough Lines..." << endl;
-    vector<vector<Vec4i>> allPatchesOfLines = houghLineOnPatch(cityName, INPUT_PATH, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);    // allLines.size() is the number of patches, allLine[i].size() is the number of lines in patch i
+    vector<vector<Vec4i>> allPatchesOfLines = houghLineOnPatch(cityName, MODEL_NAME, INPUT_PATH, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);    // allLines.size() is the number of patches, allLine[i].size() is the number of lines in patch i
     cout << "   - Finished in " << time(NULL) - startTime << " seconds." << endl;
     cout << "2. Extracting Points & Lines..." << endl;
     time_t currentTime = time(NULL);
@@ -584,7 +595,14 @@ void cleanUpHoughLineImage(string cityName, string INPUT_PATH, string OUTPUT_PAT
         int p2_y = p2.getPositionY();
         line(outImg, Point(p1_x, p1_y), Point(p2_x, p2_y), Scalar(255), LINE_AA);
     }
-    imwrite("../results/my_model/post_processing_result/" + cityName + ".png", outImg); // change model_name & created post_processing_result folder
+    if (OUTPUT_PATH.empty()) {
+        createFolder("../results/" + MODEL_NAME + "/post_processing_result/");
+        imwrite("../results/" + MODEL_NAME + "/post_processing_result/" + cityName + ".png", outImg);
+    } else {
+        createFolder(OUTPUT_PATH);
+        imwrite(OUTPUT_PATH + cityName + ".png", outImg);
+    }
+    
     cout << "DONE!\nTime used: " << time(NULL) - startTime << " seconds." << endl;
 }
 
@@ -593,15 +611,18 @@ float point2PointDistance(MyPoint p1, MyPoint p2) {
     return sqrt(distance);
 }
 
-vector<vector<Vec4i>> houghLineOnPatch(string cityName, string INPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
+vector<vector<Vec4i>> houghLineOnPatch(string cityName, string MODEL_NAME, string INPUT_PATH, Size IMAGE_TILE_SIZE, int MAX_PATCH_LOC_X, int MAX_PATCH_LOC_Y) {
     string rootPath = BASE_PATH;
-    string directory = rootPath + "my_model/result_on_patches/";   // model_name needs to be changed
+    string directory = rootPath + MODEL_NAME + "/result_on_patches/";   // model_name needs to be changed
     vector<vector<Vec4i>> allLines;
     for (int patch_position_x = 0; patch_position_x < MAX_PATCH_LOC_X; patch_position_x++) {
         for (int patch_position_y = 0; patch_position_y < MAX_PATCH_LOC_Y; patch_position_y++) {
             string fileName = to_string(patch_position_x) + "_" + to_string(patch_position_y) + ".png";
             //Mat rgbImg = imread(directory + cityName + "_" + fileName);
             Mat predImg = imread(directory + cityName + "_" + fileName, IMREAD_GRAYSCALE);
+            if (!INPUT_PATH.empty()) {
+                Mat predImg = imread(INPUT_PATH + cityName + "_" + fileName, IMREAD_GRAYSCALE);
+            }
             if (!predImg.data) {
                 cout << "Failed to load image patches, wrong input path!" << endl;
                 exit(-1);
