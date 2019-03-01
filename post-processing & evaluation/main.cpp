@@ -26,9 +26,9 @@
 #define P2P_THRESHOLD 30
 #define P2L_THRESHOLD 30
 
-#define PRE_MAX_PATCH_LOC_X 81  // 81 needs to be changed
+#define PRE_MAX_PATCH_LOC_X 81  // default value for MAX_PATCH_LOC
 #define PRE_MAX_PATCH_LOC_Y 81
-#define IMAGE_TILE_SIZE_ROWS 8192   //8192 needs to be changed
+#define IMAGE_TILE_SIZE_ROWS 8192   // default value for IMAGE_TILE_SIZE
 #define IMAGE_TILE_SIZE_COLS 8192
 
 using namespace std;
@@ -76,6 +76,7 @@ int main(int argc, const char * argv[]) {
     int MAX_PATCH_LOC_Y;
     parseArgs(argc, argv, mode, MODEL_NAME, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE, MAX_PATCH_LOC_X, MAX_PATCH_LOC_Y);
 
+    // To test the parser
 //    cout << mode << endl;
 //    cout << MODEL_NAME << endl;
 //    cout << INPUT_PATH << endl;
@@ -103,10 +104,10 @@ int main(int argc, const char * argv[]) {
     
     switch (mode) {
         case 0:
-//            generateAllPatches(cities, MODEL_NAME, INPUT_PATH, OUTPUT_PATH);   // Gerenate patches for testing
+            generateAllPatches(cities, MODEL_NAME, INPUT_PATH, OUTPUT_PATH);   // Gerenate patches for testing
             break;
         case 1:
-//            cleanUpHoughLineImage(cityName, MODEL_NAME, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE);  // Iterative Hough Transform on patches
+            cleanUpHoughLineImage(cityName, MODEL_NAME, INPUT_PATH, OUTPUT_PATH, IMAGE_TILE_SIZE);  // Iterative Hough Transform on patches
             break;
         default:
 //            startEval(cities);        // Evaluate results (IoU and F1 score)
