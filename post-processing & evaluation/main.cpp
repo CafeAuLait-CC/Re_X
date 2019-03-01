@@ -260,7 +260,7 @@ void createFolder(string folderPath) {
 #endif
     
 #ifdef _WIN32
-    if (mkdir(const char *_Path) == -1) {
+    if (mkdir(folderPath.c_str()) == -1) {
         cout << "Failed to create folder: " << folderPath << endl;
         exit(-1);
     }
