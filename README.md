@@ -12,7 +12,7 @@ CMake & make
 2. Create 4 folders under `data/`: `rgb`, `y`, `rgb_ng` and `y_ng`, put RGB imagery into `rgb` folder, ground truth image into `y` folder. `rgb_ng` and `y_ng` are for test set. You can use .jpg, .png or .tif format. 
 
 ### Train the model
-1. Go to `training & testing` folder and run `python3 mean.py -i ../data/rgb/`
+1. Go to `training & testing` folder and run `python mean.py -i ../data/rgb/`
 2. Run `python3 train.py -n TRAINING_NAME`, the trained model will be saved in `results/TRAINING_NAME/model.hdf5`
 
 	```
@@ -40,7 +40,7 @@ CMake & make
 	```
 
 ### Post-processing
-1. Go to `post-processing & evaluation` folder,  run the `./Re_X` program in post-processing mode to get vectorized result images (final results). Output images will be saved in the folder `Re_X/results/TRAINING_NAMEpost_processing_result/`.
+1. Go to `post-processing & evaluation` folder,  run the `./Re_X` program in post-processing mode to get vectorized result images (final results). Output images will be saved in the folder `Re_X/results/TRAINING_NAME/post_processing_result/`.
 
 	```
 	$ cd Re_X/post-processing\ \&\ evaluation/
@@ -63,9 +63,9 @@ $ ./Re_X
 
 Usage: ./Re_X mode -n model_name [...opts]
 
-    mode:  	0: generateAllPatches()				# prepare the inference data
-	   	1: cleanUpHoughLineImage()			# post-processing & refinement
-	   	2: startEval() & drawDiffMapOnRGB()		# evaluation
+    mode:  	0: prepare the inference data			# generateAllPatches()
+	   	1: post-processing & refinement			# cleanUpHoughLineImage()
+	   	2: evaluation					# startEval() & drawDiffMapOnRGB()
 
     -n:  the folder name used to save the trained model.
 
