@@ -3,9 +3,10 @@ Delineation of Road Networks Using Deep Residual Neural Networks and Iterative H
 
 ## Usage
 ### Main Dependencies
-Keras + TensorFlow  
-OpenCV for C++ & Python3  
-CMake & make  
+1. Keras + TensorFlow  
+2. NumPy, Matplotlib, Scikit-image
+2. OpenCV for C++ & Python3  
+3. CMake & make  
 
 ### Dataset preparation
 1. Create a folder `data/` under this project directory
@@ -63,9 +64,9 @@ $ ./Re_X
 
 Usage: ./Re_X mode -n model_name [...opts]
 
-    mode:  	0: prepare the inference data			# generateAllPatches()
-	   	1: post-processing & refinement			# cleanUpHoughLineImage()
-	   	2: evaluation					# startEval() & drawDiffMapOnRGB()
+    mode:  	0: prepare the inference data		# generateAllPatches()
+	   	1: post-processing & refinement		# cleanUpHoughLineImage()
+	   	2: evaluation				# startEval() & drawDiffMapOnRGB()
 
     -n:  the folder name used to save the trained model.
 
