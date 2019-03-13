@@ -1,6 +1,5 @@
-# Re_X  
+# [Re_X](http://theictlab.org/lp/2019Re_X/)  
 Delineation of Road Networks Using Deep Residual Neural Networks and Iterative Hough Transform  
-Project website: [http://theictlab.org/lp/2019Re_X/](http://theictlab.org/lp/2019Re_X/)
 ## Usage
 ### Main Dependencies
 1. Keras + TensorFlow  
