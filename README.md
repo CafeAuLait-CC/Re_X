@@ -29,7 +29,7 @@ Delineation of Road Networks Using Deep Residual Neural Networks and Iterative H
 	$ mkdir build && cd build
 	$ cmake ..
 	$ make && cd ..
-	$ ./Re_X 0 TRAINING_NAME
+	$ ./Re_X 0 -n TRAINING_NAME
 	```
 	After this, you will get a bunch of 200x200 image patches saved in `Re_X/data/rgb_ng/patches_to_predict/`, the file names of these images represent their location in the original image tile.
 2. Go to `training & testing` folder and run the test program to inference the road map using the `TRAINING_NAME` model, segmentation result will be saved in `Re_X/results/TRAINING_NAME/result_on_patches/`  
@@ -44,7 +44,7 @@ Delineation of Road Networks Using Deep Residual Neural Networks and Iterative H
 
 	```
 	$ cd Re_X/post-processing\ \&\ evaluation/
-	$ ./Re_X 1 TRAINING_NAME
+	$ ./Re_X 1 -n TRAINING_NAME
 	```
 
 ### Evaluation
@@ -52,7 +52,7 @@ Delineation of Road Networks Using Deep Residual Neural Networks and Iterative H
 
 	```
 	$ cd Re_X/post-processing\ \&\ evaluation/
-	$ ./Re_X 2 TRAINING_NAME
+	$ ./Re_X 2 -n TRAINING_NAME
 	```
 	
 ### Help
@@ -79,9 +79,12 @@ Usage: ./Re_X mode -n model_name [...opts]
 
 #### IMPORTANT: To use this software, YOU MUST CITE the following in any resulting publication:  
 ```
-@article{xu2019,
-title={Delineation of Road Networks Using Deep Residual Neural Networks and Iterative Hough Transform},
-author={Xu, Pinjing and Poullis, Charalambos},
-year={2019}
+@inproceedings{xu2019delineation,
+  title={Delineation of Road Networks Using Deep Residual Neural Networks and Iterative Hough Transform},
+  author={Xu, Pinjing and Poullis, Charalambos},
+  booktitle={International Symposium on Visual Computing},
+  pages={32--44},
+  year={2019},
+  organization={Springer}
 }
 ```
