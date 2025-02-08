@@ -1,4 +1,4 @@
-# [Re_X]([http://theictlab.org/lp/2019Re_X/](https://theictlab.org/14th-international-symposium-on-visual-computing/))  
+# [Re_X](https://theictlab.org/14th-international-symposium-on-visual-computing/)  
 Delineation of Road Networks Using Deep Residual Neural Networks and Iterative Hough Transform  
 ## Usage
 ### Main Dependencies
